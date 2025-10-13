@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "340647813489",
+    "project_id": "fast-and-dubious",
+    "storage_bucket": "fast-and-dubious.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340647813489:android:9813cba343f4797a3e96d0",
+        "android_client_info": {
+          "package_name": "com.mycompany.CounterApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_e0MEnro2DumkHueO6Z5Hojiz91KxT_g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

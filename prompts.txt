@@ -1,0 +1,9 @@
+1. i want to replicate a mobile app that takes as an input a photo of a person's face an alters it based on facial hair, skin color and facial expressions and other categories, can you tell me what's the best way to host it to work with the client side so it can be scalable and work with 1 user from 1000000 users, what would be the software architecture with design patterns and solid principles to also be scalable, what would be the database approach and the manner of testing
+
+2. how can an app be hosted, what is the procedure to host an app instead of using services like firebase, aws or azure
+
+3. how does the asynchronous Processing Workflow work and how can be constructed, leaving the frontend at last
+
+4. since a single database won't be enough for extreme scalability how would you address this issue and how would you make it to be not very convoluted, easy to parse and to alter it if debugging is needed
+
+5. we will heavily use ai and we need to know for sure if it implements correct solutions, how would you construct the each category of testing methods so that we can check it? 

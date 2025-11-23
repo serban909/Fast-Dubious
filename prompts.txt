@@ -7,3 +7,8 @@
 4. since a single database won't be enough for extreme scalability how would you address this issue and how would you make it to be not very convoluted, easy to parse and to alter it if debugging is needed
 
 5. we will heavily use ai and we need to know for sure if it implements correct solutions, how would you construct the each category of testing methods so that we can check it? 
+
+
+For an app that uses flutter dart frontend and firebase database, what framework is better to use in python django or flask. (the app should take the data of a user: name, photo, date of birth, ssn and send the data to an image generator ai like nano banana or stable diffusion to generate a custom id/badge with possible joke modification like added mustache/beard/change appearance)
+
+and waht versions of python/django/flutter-dart should be used for stability (long time support)

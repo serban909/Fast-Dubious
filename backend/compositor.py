@@ -26,6 +26,22 @@ class BadgeCompositor:
                 face = face.resize((300, 300)) 
                 # Paste face at specific coordinates (x=50, y=100)
                 template.paste(face, (50, 100), face)
+                
+                # 2b. Add second copy on the right side - black & white + transparent
+                face_bw = face.convert("L")  # Convert to grayscale
+                face_bw_rgba = face_bw.convert("RGBA")
+                
+                # Create a white background
+                white_bg = Image.new("RGBA", face_bw_rgba.size, (255, 255, 255, 255))
+                
+                # Composite the B&W image onto the white background
+                face_bw_with_white_bg = Image.alpha_composite(white_bg, face_bw_rgba)
+                
+                # Apply transparency
+                face_bw_with_white_bg.putalpha(128)  # 0=transparent, 255=opaque
+                
+                # Paste the transparent B&W image with white background on the right side
+                template.paste(face_bw_with_white_bg, (650, 100), face_bw_with_white_bg)
 
             # 3. Draw Text Data
             draw = ImageDraw.Draw(template)
@@ -40,9 +56,33 @@ class BadgeCompositor:
 
             # Write Data - adapted from comptest.py layout
             # Use safe .get lookups so missing optional fields won't raise KeyError
-            draw.text((420, 215), f"{user_data.get('id_code', '')}", font=font_body, fill="black")
-            draw.text((400, 275), f"{user_data.get('last_name', '')}", font=font_header, fill="black")
-            draw.text((400, 335), f"{user_data.get('first_name', '')}", font=font_header, fill="black")
+            
+            # Draw ID code with colored parts
+            # Format: 0(red) 212059(blue) 536198(red)
+            id_code = user_data.get('id_code', '')
+            x_position = 420
+            y_position = 215
+            
+            if len(id_code) == 13:  # Assuming format: 0212059536198
+                # First character (0) in red
+                draw.text((x_position, y_position), id_code[0], font=font_body, fill="red")
+                # Calculate width of first character to offset next part
+                bbox = draw.textbbox((x_position, y_position), id_code[0], font=font_body)
+                offset1 = bbox[2] - bbox[0]
+                
+                # Middle 6 digits (212059) in blue
+                draw.text((x_position + offset1, y_position), id_code[1:7], font=font_body, fill="blue")
+                bbox = draw.textbbox((x_position + offset1, y_position), id_code[1:7], font=font_body)
+                offset2 = offset1 + (bbox[2] - bbox[0])
+                
+                # Last 6 digits (536198) in red
+                draw.text((x_position + offset2, y_position), id_code[7:13], font=font_body, fill="red")
+            else:
+                # Fallback: draw entire ID in black if format doesn't match
+                draw.text((x_position, y_position), id_code, font=font_body, fill="black")
+            
+            draw.text((400, 275), f"{user_data.get('last_name', '').upper()}", font=font_header, fill="black")
+            draw.text((400, 335), f"{user_data.get('first_name', '').upper()}", font=font_header, fill="black")
 
             # Prefer optional fields (nationality, lob) if provided — otherwise show DOB as a fallback
             if user_data.get('nationality') or user_data.get('lob'):

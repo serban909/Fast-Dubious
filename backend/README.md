@@ -36,6 +36,7 @@ backend/
 
 ```powershell
 # Navigate to the backend directory
+cd "c:\Users\uiv21850\OneDrive - Vitesco Technologies\Desktop\badges\badges\backend"
 
 # Create virtual environment
 python -m venv venv
@@ -158,4 +159,12 @@ The compositor will fall back to default fonts if custom fonts are missing. Plac
 3. Test badge generation workflow
 4. Set up Celery for async processing (recommended for production)
 
+## Production Considerations
 
+- Set `DEBUG = False` in settings.py
+- Use proper `SECRET_KEY` (generate with `django.core.management.utils.get_random_secret_key()`)
+- Configure ALLOWED_HOSTS properly
+- Use MySQL or PostgreSQL instead of SQLite
+- Set up Celery for background processing
+- Use proper file storage (S3, Azure Blob, etc.)
+- Add authentication/authorization

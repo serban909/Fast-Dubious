@@ -69,9 +69,9 @@ if __name__ == "__main__":
     }
 
     compositor = BadgeCompositor(
-        template_path="backend/CIROU_temp2.png",  # must exist in current folder
+        template_path="CIROU_temp2.png",  # must exist in current folder
         font_path="times.ttf"          # optional, falls back if missing
     )
 
-    result_path = compositor.create_badge(user_info, "backend/djtb.jpeg")
+    result_path = compositor.create_badge(user_info, "djtb.jpeg")
     print(f"Badge created: {result_path}")

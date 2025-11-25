@@ -38,11 +38,20 @@ class BadgeCompositor:
                 font_header = ImageFont.load_default()
                 font_body = ImageFont.load_default()
 
-            # Write Data
-            # (Coordinates need to be calibrated to your specific template)
-            draw.text((400, 100), f"{user_data['first_name']} {user_data['last_name']}", font=font_header, fill="black")
-            draw.text((400, 160), f"ID: {user_data['id_code']}", font=font_body, fill="gray")
-            draw.text((400, 200), f"DOB: {user_data['dob']}", font=font_body, fill="gray")
+            # Write Data - adapted from comptest.py layout
+            # Use safe .get lookups so missing optional fields won't raise KeyError
+            draw.text((420, 215), f"{user_data.get('id_code', '')}", font=font_body, fill="black")
+            draw.text((400, 275), f"{user_data.get('last_name', '')}", font=font_header, fill="black")
+            draw.text((400, 335), f"{user_data.get('first_name', '')}", font=font_header, fill="black")
+
+            # Prefer optional fields (nationality, lob) if provided — otherwise show DOB as a fallback
+            if user_data.get('nationality') or user_data.get('lob'):
+                if user_data.get('nationality'):
+                    draw.text((400, 390), f"{user_data.get('nationality')}", font=font_header, fill="black")
+                if user_data.get('lob'):
+                    draw.text((400, 450), f"{user_data.get('lob')}", font=font_body, fill="black")
+            else:
+                draw.text((400, 390), f"DOB: {user_data.get('dob', '')}", font=font_body, fill="gray")
 
             # 4. Save to Buffer
             output_buffer = BytesIO()

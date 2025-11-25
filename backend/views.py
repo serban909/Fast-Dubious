@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 
-from .models import BadgeRequest, UserProfile
-from .serializers import BadgeRequestSerializer # Assume standard serializer
-from .services.orchestrator import BadgeGenerationService
-from .adapters.ai_provider import BananaFaceAdapter
+from models import BadgeRequest, UserProfile
+from serializers import BadgeRequestSerializer
+from orchestrator import BadgeGenerationService
+from ai_provider import BananaFaceAdapter
 
 class BadgeViewSet(viewsets.ViewSet):
     """

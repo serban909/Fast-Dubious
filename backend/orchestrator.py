@@ -1,5 +1,5 @@
 from models import BadgeRequest
-from adapters.ai_provider import IFaceModifier
+from ai_provider import IFaceModifier
 from compositor import BadgeCompositor
 
 class BadgeGenerationService:

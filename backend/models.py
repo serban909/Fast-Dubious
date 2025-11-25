@@ -12,6 +12,9 @@ class UserProfile(models.Model):
     # The base photo stored in the system
     profile_photo = models.ImageField(upload_to='users/photos/')
 
+    class Meta:
+        app_label = 'badges'
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -38,6 +41,9 @@ class BadgeRequest(models.Model):
     
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PROCESSING)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = 'badges'
 
     def __str__(self):
         return f"Request {self.id} for {self.user.id_code}"

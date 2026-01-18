@@ -20,11 +20,18 @@ class FlutterFlowTheme {
   TextStyle get displaySmall =>
       GoogleFonts.interTight(fontSize: 36, fontWeight: FontWeight.w600);
 
+  TextStyle get labelSmall =>
+      GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w500);
+
   TextStyle get labelLarge =>
       GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500);
 
   TextStyle get labelMedium =>
       GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500);
+
+  Color get accent1 => const Color(0xFF6750A4); // example accent color
+  Color get accent2 => const Color(0xFF6750A4); // example accent color
+  Color get accent3 => const Color(0xFF6750A4); // example accent color
 
   Color get alternate => const Color(0xFFE0E0E0); // light gray as example
 

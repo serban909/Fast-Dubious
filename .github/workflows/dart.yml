@@ -1,4 +1,4 @@
-name: Dart CI
+name: Flutter CI
 
 on:
   push:
@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # This tells GitHub to run all commands inside your specific folder
     defaults:
       run:
         working-directory: frontend2/fr2
@@ -18,13 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dart-lang/setup-dart@v1 # Using the v1 tag is cleaner than the commit hash
+      # Setup Flutter instead of plain Dart
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true # Speeds up future runs
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Analyze project source
-        run: dart analyze
+        run: flutter analyze
 
       - name: Run tests
-        run: dart test
+        run: flutter test

@@ -2,7 +2,7 @@
 Serializers for the badges backend.
 """
 from rest_framework import serializers
-from models import BadgeRequest, UserProfile
+from backend.models import BadgeRequest, UserProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

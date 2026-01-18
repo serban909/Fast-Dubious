@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 django.setup()
 
-from models import UserProfile
+from backend.models import UserProfile, Vehicle, InsurancePolicy
+import datetime
 
 class InsuranceCompositor:
     """
@@ -162,87 +163,112 @@ class InsuranceCompositor:
 # Example usage
 if __name__ == "__main__":
     
-    # Fetch a random user from the database
-    user = None
-    try:
-        users = list(UserProfile.objects.all())
-        if users:
-            user = random.choice(users)
-            print(f"👤 Found user: {user.first_name} {user.last_name} ({user.id_code})")
-        else:
-            print("⚠️ No users found in database. Using fallback data.")
-    except Exception as e:
-        print(f"⚠️ Error fetching from database: {e}")
+    # 1. Get or Create User
+    user = UserProfile.objects.first()
+    if not user:
+        # Create a dummy user
+        try:
+            user = UserProfile.objects.create(
+                id_code="1800101123456",
+                first_name="Popescu",
+                last_name="Ion",
+                date_of_birth="1980-01-01",
+                address="Str. Principala Nr. 10, Bucuresti"
+            )
+            print("Created dummy user.")
+        except Exception as e:
+            print(f"Error creating user: {e}")
+            user = UserProfile.objects.first()
 
-    # Fallback/Default values if no user found
-    first_name = "POPESCU"
-    last_name = "ION"
-    id_code = "1800101123456"
-    address = "Str. Principala Nr. 10, Bucuresti, Sector 1"
-    
     if user:
-        first_name = user.first_name.upper()
-        last_name = user.last_name.upper()
-        id_code = user.id_code
-        # Address is not in UserProfile currently, would need to be added or faked
-        # address = user.address if hasattr(user, 'address') else address
+        print(f"👤 Using user: {user.first_name} {user.last_name}")
 
-    # Sample data structure matching the fields in the template
-    sample_data = {
-        # Header
-        "insurer_name": "INSURANCE CO. S.A.",
-        "insurer_tel_fax": "021.123.45.67",
-        "contract_series": "RO/01",
-        "nr_header": str(random.randint(10000, 99999)),
-        "contract_number": str(random.randint(100000000, 999999999)),
-        "insurer_cui": "RO12345678",
-        "branch_agency": "Bucharest Agency 1",
-        "broker_name": "Best Broker SRL",
-        "broker_code": "BRK-001",
+        # 2. Get or Create Vehicle
+        vehicle = Vehicle.objects.filter(owner=user).first()
+        if not vehicle:
+            vehicle = Vehicle.objects.create(
+                owner=user,
+                make_model="Autoturism / DACIA / LOGAN",
+                registration_number="B 101 ABC",
+                vin="UU1SD435555555",
+                engine_power="1390 cm3 / 55 kW",
+                seats_mass="5 locuri / 1500 kg"
+            )
+            print("Created dummy vehicle.")
         
-        # Insured
-        "owner_name": f"{first_name} {last_name}",
-        "owner_id": id_code,
-        "user_name": f"{first_name} {last_name}",  # Often same as owner
-        "user_id": id_code,
-        "owner_address": address,
-        "drivers": f"{first_name} {last_name} ({id_code})",
-        
-        # Vehicle
-        "vehicle_type_make_model": "Autoturism / DACIA / LOGAN",
-        "vehicle_registration": "B 101 ABC",
-        "vehicle_vin": "UU1SD435555555",
-        "vehicle_engine_power": "1390 cm3 / 55 kW",
-        "vehicle_seats_mass": "5 locuri / 1500 kg",
-        
-        # Contract Details
-        "validity_start": "01/01/2024",
-        "validity_end": "31/12/2024",
-        "issue_date": "20/12/2023",
-        "premium_amount": "500",
-        "direct_settlement_premium": "50",
-        "total_premium": "550",
-        "installments_count": "Integral",
-        "valoare_rate": "550 Lei",
-        "due_dates": "-",
-        "bonus_malus": "B8",
-        "incasata_cu": "OP",
-        "in_data_de": "20.12.2023",
-        
-        # Limits
-        "limit_bodily_injury": "6.070.000 EURO",
-        "limit_property_damage": "1.220.000 EURO",
-        
-        # Other
-        "additional_services": "Asistenta Rutiera (Basic)",
-        "observations": "Polita emisa electronic."
-    }
+        # 3. Get or Create Policy
+        policy = InsurancePolicy.objects.filter(user=user, vehicle=vehicle).first()
+        if not policy:
+            policy = InsurancePolicy.objects.create(
+                user=user,
+                vehicle=vehicle,
+                number=str(random.randint(100000000, 999999999)),
+                header_nr=str(random.randint(10000, 99999)),
+                validity_start=datetime.date(2024, 1, 1),
+                validity_end=datetime.date(2024, 12, 31),
+                premium_amount=500.00,
+                total_premium=550.00,
+                valoare_rate="550 Lei",
+                in_data_de=datetime.date(2023, 12, 20)
+            )
+            print("Created dummy policy.")
 
-    compositor = InsuranceCompositor(
-        template_path="Contract-de-asigurare-RCA-1.png", 
-        font_path="times.ttf"
-    )
-    
-    # Note: Ensure 'Contract-de-asigurare-RCA-1.png' exists in the directory or provide absolute path
-    # If using placeholders, the text might not align perfectly without adjustment.
-    compositor.create_insurance(sample_data, "test_insurance.png")
+        # Map Policy to Data Dict
+        sample_data = {
+             # Header
+            "insurer_name": policy.insurer_name,
+            "insurer_tel_fax": policy.insurer_tel_fax,
+            "contract_series": policy.series,
+            "nr_header": policy.header_nr,
+            "contract_number": policy.number,
+            "insurer_cui": policy.insurer_cui,
+            "branch_agency": policy.branch_agency,
+            "broker_name": policy.broker_name,
+            "broker_code": policy.broker_code,
+            
+            # Insured
+            "owner_name": f"{user.first_name} {user.last_name}".upper(),
+            "owner_id": user.id_code,
+            "user_name": f"{user.first_name} {user.last_name}".upper(),
+            "user_id": user.id_code,
+            "owner_address": user.address or "",
+            "drivers": f"{user.first_name} {user.last_name} ({user.id_code})".upper(),
+            
+            # Vehicle
+            "vehicle_type_make_model": vehicle.make_model,
+            "vehicle_registration": vehicle.registration_number,
+            "vehicle_vin": vehicle.vin,
+            "vehicle_engine_power": vehicle.engine_power,
+            "vehicle_seats_mass": vehicle.seats_mass,
+            
+            # Contract Details
+            "validity_start": policy.validity_start.strftime("%d/%m/%Y"),
+            "validity_end": policy.validity_end.strftime("%d/%m/%Y"),
+            "issue_date": policy.issue_date.strftime("%d/%m/%Y") if policy.issue_date else "", 
+            "premium_amount": str(policy.premium_amount),
+            "direct_settlement_premium": str(policy.direct_settlement_premium),
+            "total_premium": str(policy.total_premium),
+            "installments_count": policy.installments_count,
+            "valoare_rate": policy.valoare_rate,
+            "due_dates": policy.due_dates,
+            "bonus_malus": policy.bonus_malus,
+            "incasata_cu": policy.incasata_cu,
+            "in_data_de": policy.in_data_de.strftime("%d.%m.%Y") if policy.in_data_de else "",
+            
+            # Limits
+            "limit_bodily_injury": policy.limit_bodily_injury,
+            "limit_property_damage": policy.limit_property_damage,
+            
+            # Other
+            "additional_services": policy.additional_services,
+            "observations": policy.observations
+        }
+
+        compositor = InsuranceCompositor(
+            template_path="Contract-de-asigurare-RCA-1.png", 
+            font_path="times.ttf"
+        )
+        
+        compositor.create_insurance(sample_data, f"insurance_{policy.number}.png")
+    else:
+        print("Could not find or create a user.")

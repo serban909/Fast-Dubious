@@ -1,4 +1,4 @@
-from models import BadgeRequest
+from backend.models import BadgeRequest
 from ai_provider import IFaceModifier
 from compositor import BadgeCompositor
 

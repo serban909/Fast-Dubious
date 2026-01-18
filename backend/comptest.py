@@ -1,4 +1,14 @@
 import os
+import django
+
+# Must configure Django before importing libraries that use settings
+if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    try:
+        django.setup()
+    except Exception as e:
+        print(f"Warning: Django setup failed ({e}). Some features might not work.")
+
 import csv
 import random
 from io import BytesIO
@@ -308,10 +318,21 @@ if __name__ == "__main__":
         "number": place_data['number']
     }
 
+    # 4. Process Photo with AI (Optional)
+    from ai_provider import GeminiFaceAdapter
+    
+    photo_path = "djtb.jpeg"
+    # Example prompt - in a real scenario, this matches the user "description"
+    description = "add a mustache" 
+    
+    print(f"🤖 Connecting to Gemini API to process: {photo_path} with: '{description}'")
+    ai_adapter = GeminiFaceAdapter()
+    processed_photo_path = ai_adapter.alter_face(photo_path, description)
+    
     compositor = BadgeCompositor(
         template_path="CIROU_temp2.png",  # Using the main template
         font_path="times.ttf"          # optional, falls back if missing
     )
 
-    result_path = compositor.create_badge(user_info, "djtb.jpeg")
+    result_path = compositor.create_badge(user_info, processed_photo_path)
     print(f"✅ Badge created: {result_path}")

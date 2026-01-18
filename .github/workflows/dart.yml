@@ -13,7 +13,7 @@ jobs:
     # This tells GitHub to run all commands inside your specific folder
     defaults:
       run:
-        working-directory: fronted2/fr2
+        working-directory: frontend2/fr2
 
     steps:
       - uses: actions/checkout@v4

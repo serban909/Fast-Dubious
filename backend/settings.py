@@ -7,6 +7,10 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
 
+# Make 'backend' importable from here
+import sys
+sys.path.append(str(BASE_DIR.parent))
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-dev-key-change-in-production-xyz123456789'
 
@@ -14,6 +18,14 @@ SECRET_KEY = 'django-insecure-dev-key-change-in-production-xyz123456789'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+# Necessary for ngrok tunneling
+CSRF_TRUSTED_ORIGINS = [
+    'https://supereloquently-unstanding-ardath.ngrok-free.dev', 
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+    'https://supereloquently-unstanding-ardath.ngrok-free.dev/'
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -24,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'apps.BadgesConfig',  # This app
+    'backend.apps.BadgesConfig',  # This app
 ]
 
 MIDDLEWARE = [

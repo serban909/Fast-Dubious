@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fr2/pages/choose_passport_widget.dart';
 import 'pages/homePageView.dart';
-import 'pages/login1_widget.dart';
 import 'pages/create_account3_widget.dart';
-import 'pages/dashboard_widget.dart';
-import 'pages/choose_identity_widget.dart';
-import 'pages/enter_indetity_data_widget.dart';
-import 'pages/display_i_d_widget.dart';
 
 void main() {
   runApp(const MyApp());

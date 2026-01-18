@@ -136,3 +136,4 @@ REST_FRAMEWORK = {
 # AI Provider settings (Banana/Stable Diffusion)
 BANANA_API_KEY = os.getenv('BANANA_API_KEY', 'your-api-key-here')
 BANANA_URL = os.getenv('BANANA_URL', 'https://api.banana.dev/your-endpoint')
+GEMINI_API_KEY = "AIzaSyDAdHKAH03qNv8r9o3HUz6Zz6ypoHhKy6E"

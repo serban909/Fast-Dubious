@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import 'enter_indetity_data_model.dart';
@@ -24,6 +25,8 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
   late EnterIndetityDataModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final ImagePicker _imagePicker = ImagePicker();
+  XFile? _selectedPhoto;
 
   final animationsMap = <String, AnimationInfo>{};
 
@@ -103,7 +106,7 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Column(
             mainAxisSize: MainAxisSize.max,
@@ -1002,8 +1005,33 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                       0,
                                       0,
                                     ),
-                                    child:
-                                        Container(
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          final picked = await _imagePicker
+                                              .pickImage(source: ImageSource.gallery);
+                                          if (picked == null) {
+                                            return;
+                                          }
+                                          if (!mounted) {
+                                            return;
+                                          }
+                                          setState(() {
+                                            _selectedPhoto = picked;
+                                          });
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Selected: ${picked.name}',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
                                           width: double.infinity,
                                           constraints: BoxConstraints(
                                             maxWidth: 500,
@@ -1043,7 +1071,9 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                                         0,
                                                       ),
                                                   child: Text(
-                                                    'Upload Photo',
+                                                    _selectedPhoto == null
+                                                        ? 'Upload Photo'
+                                                        : 'Selected: ${_selectedPhoto!.name}',
                                                     textAlign: TextAlign.center,
                                                     style:
                                                         FlutterFlowTheme.of(
@@ -1069,9 +1099,10 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                               ],
                                             ),
                                           ),
-                                        ).animateOnPageLoad(
-                                          animationsMap['containerOnPageLoadAnimation']!,
                                         ),
+                                      ).animateOnPageLoad(
+                                        animationsMap['containerOnPageLoadAnimation']!,
+                                      ),
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(

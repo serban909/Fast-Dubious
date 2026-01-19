@@ -8,6 +8,11 @@ export 'dashboard_model.dart';
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
+import 'choose_identity_widget.dart' show ChooseIdentityWidget;
+import 'choose_insurance_widget.dart' show ChooseInsuranceWidget;
+import 'choose_passport_widget.dart' show ChoosePassportWidget;
+import 'login1_widget.dart' show Login1Widget;
+
 class DashboardWidget extends StatefulWidget {
   const DashboardWidget({super.key});
 
@@ -195,12 +200,6 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                             focusColor: Colors.transparent,
                                             hoverColor: Colors.transparent,
                                             highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              // setDarkModeSetting(
-                                              //   context,
-                                              //   ThemeMode.light,
-                                              // );
-                                            },
                                             child: Container(
                                               width: 115,
                                               height: 100,
@@ -410,10 +409,11 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    // context.pushNamed(
-                                    //   ChooseIdentityWidget.routeName,
-                                    // );
-                                  },
+                                                Navigator.pushNamed(
+                                                  context,
+                                                  ChooseIdentityWidget.routePath,
+                                                );
+                                            },
                                   child: Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
@@ -542,9 +542,10 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    // context.pushNamed(
-                                    //   ChooseInsuranceWidget.routeName,
-                                    // );
+                                    Navigator.pushNamed(
+                                      context,
+                                      ChooseInsuranceWidget.routePath,
+                                    );
                                   },
                                   child: Container(
                                     width: double.infinity,
@@ -574,9 +575,10 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          // context.pushNamed(
-                                          //   ChooseInsuranceWidget.routeName,
-                                          // );
+                                          Navigator.pushNamed(
+                                            context,
+                                            ChooseInsuranceWidget.routePath,
+                                          );
                                         },
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
@@ -684,9 +686,10 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    // context.pushNamed(
-                                    //   ChoosePassportWidget.routeName,
-                                    // );
+                                    Navigator.pushNamed(
+                                      context,
+                                      ChoosePassportWidget.routePath,
+                                    );
                                   },
                                   child: Container(
                                     width: double.infinity,
@@ -716,9 +719,10 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          // context.pushNamed(
-                                          //   ChoosePassportWidget.routeName,
-                                          // );
+                                          Navigator.pushNamed(
+                                            context,
+                                            ChoosePassportWidget.routePath,
+                                          );
                                         },
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
@@ -823,7 +827,10 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                   size: 24,
                                 ),
                                 onPressed: () {
-                                  print('IconButton pressed ...');
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    Login1Widget.routePath,
+                                  );
                                 },
                               ),
                             ],

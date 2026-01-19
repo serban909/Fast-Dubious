@@ -36,11 +36,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'backend.apps.BadgesConfig',  # This app
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -132,6 +134,10 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+
+# CORS for Flutter web/mobile
+# Allow any origin during local development (Flutter web-server uses random ports).
+CORS_ALLOW_ALL_ORIGINS = True
 
 # AI Provider settings (Banana/Stable Diffusion)
 BANANA_API_KEY = os.getenv('BANANA_API_KEY', 'your-api-key-here')

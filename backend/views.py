@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate, get_user_model
 
 from backend.models import BadgeRequest, UserProfile
 from serializers import BadgeRequestSerializer
@@ -49,3 +51,95 @@ class BadgeViewSet(viewsets.ViewSet):
             "status": badge_req.status,
             "badge_url": badge_req.final_badge.url if badge_req.final_badge else None
         })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    email = request.data.get('email')
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if not password or not (email or username):
+        return Response(
+            {"error": "Email/username and password are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user_model = get_user_model()
+    resolved_username = username
+
+    if email and not username:
+        try:
+            user_obj = user_model.objects.get(email=email)
+            resolved_username = user_obj.get_username()
+        except user_model.DoesNotExist:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+    user = authenticate(request, username=resolved_username, password=password)
+    if not user:
+        return Response(
+            {"error": "Invalid credentials."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    return Response(
+        {
+            "success": True,
+            "user": {
+                "id": user.id,
+                "username": user.get_username(),
+                "email": user.email,
+            },
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup_view(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+    username = request.data.get('username') or email
+
+    if not email or not password:
+        return Response(
+            {"error": "Email and password are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user_model = get_user_model()
+
+    if user_model.objects.filter(email=email).exists():
+        return Response(
+            {"error": "Email already registered."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if user_model.objects.filter(username=username).exists():
+        return Response(
+            {"error": "Username already registered."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = user_model.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+    )
+
+    return Response(
+        {
+            "success": True,
+            "user": {
+                "id": user.id,
+                "username": user.get_username(),
+                "email": user.email,
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )

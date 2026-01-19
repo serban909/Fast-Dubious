@@ -28,7 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  flutterflow_ui:  ^0.3.1
+  flutterflow_ui:
+    path: vendor_flutterflow_ui
   flutter:
     sdk: flutter
     
@@ -40,10 +41,13 @@ dependencies:
   google_fonts: ^6.3.3
   flutter_animate: ^4.5.2
   font_awesome_flutter: ^10.12.0
+  http: ^1.2.2
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  network_image_mock: ^2.1.1
     
 
   # The "flutter_lints" package below contains a set of recommended lints to

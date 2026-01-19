@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
+import '../services/auth_api.dart';
+
 import 'login1_model.dart';
 export 'login1_model.dart';
 
 import 'create_account3_widget.dart' show CreateAccount3Widget;
+import 'dashboard_widget.dart' show DashboardWidget;
 
 class Login1Widget extends StatefulWidget {
   const Login1Widget({super.key});
@@ -24,6 +27,8 @@ class _Login1WidgetState extends State<Login1Widget> {
   late Login1Model _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -166,7 +171,7 @@ class _Login1WidgetState extends State<Login1Widget> {
                                     0,
                                     16,
                                   ),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 370,
                                     child: TextFormField(
                                       controller:
@@ -264,7 +269,7 @@ class _Login1WidgetState extends State<Login1Widget> {
                                     0,
                                     16,
                                   ),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 370,
                                     child: TextFormField(
                                       controller: _model.passwordTextController,
@@ -371,6 +376,26 @@ class _Login1WidgetState extends State<Login1Widget> {
                                     ),
                                   ),
                                 ),
+                                if (_errorMessage != null)
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                      0,
+                                      0,
+                                      0,
+                                      16,
+                                    ),
+                                    child: Text(
+                                      _errorMessage!,
+                    style: FlutterFlowTheme.of(context)
+                      .labelMedium
+                      .override(
+                                            font: 'Inter Tight',
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                  ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                     0,
@@ -380,15 +405,63 @@ class _Login1WidgetState extends State<Login1Widget> {
                                   ),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      // GoRouter.of(context).prepareAuthEvent();
-                                      // await authManager.signIn();
+                                      if (_isLoading) {
+                                        return;
+                                      }
 
-                                      // context.goNamedAuth(
-                                      //   DashboardWidget.routeName,
-                                      //   context.mounted,
-                                      // );
+                                      final email = _model
+                                              .emailAddressTextController?.text
+                                              .trim() ??
+                                          '';
+                                      final password = _model
+                                              .passwordTextController?.text ??
+                                          '';
+
+                                      if (email.isEmpty || password.isEmpty) {
+                                        safeSetState(
+                                          () => _errorMessage =
+                                              'Please enter email and password.',
+                                        );
+                                        return;
+                                      }
+
+                                      safeSetState(() {
+                                        _isLoading = true;
+                                        _errorMessage = null;
+                                      });
+
+                                      final result = await AuthApi.login(
+                                        email: email,
+                                        password: password,
+                                      );
+
+                                      if (!mounted) {
+                                        return;
+                                      }
+
+                                      safeSetState(() {
+                                        _isLoading = false;
+                                        _errorMessage =
+                                            result.error ?? _errorMessage;
+                                      });
+
+                                      if (result.success) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Login successful!',
+                                            ),
+                                          ),
+                                        );
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          DashboardWidget.routePath,
+                                        );
+                                      }
                                     },
-                                    text: 'Sign In',
+                                    text:
+                                        _isLoading ? 'Signing In...' : 'Sign In',
                                     options: FFButtonOptions(
                                       width: 370,
                                       height: 44,

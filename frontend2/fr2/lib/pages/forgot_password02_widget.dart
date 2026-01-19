@@ -157,7 +157,7 @@ class _ForgotPassword02WidgetState extends State<ForgotPassword02Widget> {
               ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
-                child: Container(
+                child: SizedBox(
                   width: double.infinity,
                   child: TextFormField(
                     controller: _model.emailAddressTextController,

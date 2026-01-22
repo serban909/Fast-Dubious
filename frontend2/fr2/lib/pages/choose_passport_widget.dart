@@ -330,7 +330,7 @@ class _ChoosePassportWidgetState extends State<ChoosePassportWidget>
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       itemCount: _passports.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 12),
+                      separatorBuilder: (context, index) => SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final passport = _passports[index];
                         final isSelected = _selectedPassportIndex == index;
@@ -351,7 +351,7 @@ class _ChoosePassportWidgetState extends State<ChoosePassportWidget>
                               color: isSelected
                                   ? FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.08)
+                                      .withValues(alpha: 0.08)
                                   : FlutterFlowTheme.of(context)
                                       .secondaryBackground,
                               boxShadow: [

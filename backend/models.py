@@ -6,14 +6,14 @@ class UserProfile(models.Model):
     """
     Represents the user data stored in MySQL.
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='profile')
-    id_code = models.CharField(max_length=20, unique=True) # Unique Employee/User ID
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='profiles')
+    id_code = models.CharField(max_length=50, unique=True) # Unique Employee/User ID
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     address = models.CharField(max_length=255, blank=True, null=True)
     # The base photo stored in the system
-    profile_photo = models.ImageField(upload_to='users/photos/')
+    profile_photo = models.ImageField(upload_to='users/photos/', blank=True, null=True)
 
     class Meta:
         app_label = 'badges'
@@ -132,6 +132,9 @@ class InsurancePolicy(models.Model):
     
     additional_services = models.TextField(default="Asistenta Rutiera (Basic)", blank=True)
     observations = models.TextField(default="Polita emisa electronic.", blank=True)
+    
+    # Generated Document
+    policy_document = models.ImageField(upload_to='insurance_policies/', blank=True, null=True)
 
     class Meta:
         app_label = 'badges'

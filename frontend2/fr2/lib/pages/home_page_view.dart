@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 
-import 'homePageModel.dart';
-export 'homePageModel.dart';
+import 'home_page_model.dart';
+export 'home_page_model.dart';
 
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 

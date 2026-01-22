@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'display_passport_widget.dart';
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 import 'enter_indetity_data_widget.dart' show EnterIndetityDataWidget;
+import '../services/auth_api.dart';
+import '../services/profile_api.dart';
 
 class ChooseIdentityWidget extends StatefulWidget {
   const ChooseIdentityWidget({super.key});
@@ -17,28 +20,32 @@ class ChooseIdentityWidget extends StatefulWidget {
 
 class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  int _selectedIdentityIndex = 0;
+  int _selectedIdentityIndex = -1;
+  List<Map<String, dynamic>> _identities = [];
+  bool _isLoading = true;
 
-  final List<Map<String, String>> _identities = const [
-    {
-      'name': 'Elaine Robertson',
-      'email': 'elaine@companyname.com',
-      'image':
-          'https://images.unsplash.com/photo-1598346762291-aee88549193f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NTV8fHVzZXJ8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'John Sanders',
-      'email': 'john@companyname.com',
-      'image':
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'Maria Smith',
-      'email': 'maria@companyname.com',
-      'image':
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=60',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfiles();
+  }
+
+  Future<void> _fetchProfiles() async {
+    final user = AuthApi.currentUser;
+    if (user != null && user['id'] != null) {
+      final profiles = await ProfileApi.getMyProfiles(userId: user['id']);
+      if (mounted) {
+        setState(() {
+          _identities = profiles;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+         setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,16 +124,26 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                             ),
                       ),
                     ),
-                    ListView.separated(
+                    _isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : _identities.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text("No identities found. Create one below."),
+                        )
+                      : ListView.separated(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _identities.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (context, index) =>
                           const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final identity = _identities[index];
                         final isSelected = _selectedIdentityIndex == index;
+                        final name = "${identity['first_name']} ${identity['last_name']}";
+                        final subtitle = identity['id_code'] ?? 'No Code';
+                        final photoUrl = identity['profile_photo'];
 
                         return InkWell(
                           splashColor: Colors.transparent,
@@ -144,7 +161,7 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                               color: isSelected
                                   ? FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.08)
+                                      .withValues(alpha: 0.08)
                                   : FlutterFlowTheme.of(context)
                                       .secondaryBackground,
                               boxShadow: const [
@@ -164,12 +181,22 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(40),
-                                    child: Image.network(
-                                      identity['image']!,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: photoUrl != null 
+                                      ? Image.network(
+                                          photoUrl.startsWith('http') 
+                                            ? photoUrl 
+                                            : "http://localhost:8000$photoUrl",
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (c, e, s) => Container(color: Colors.grey, width: 40, height: 40, child: const Icon(Icons.person)),
+                                        )
+                                      : Container(
+                                          width: 40, 
+                                          height: 40, 
+                                          color: Colors.grey.shade300, 
+                                          child: const Icon(Icons.person),
+                                        ),
                                   ),
                                   Expanded(
                                     child: Row(
@@ -191,7 +218,7 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                identity['name']!,
+                                                name,
                                                 style: FlutterFlowTheme.of(context)
                                                     .bodyLarge
                                                     .override(
@@ -216,7 +243,7 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                                                   0,
                                                 ),
                                                 child: Text(
-                                                  identity['email']!,
+                                                  subtitle,
                                                   style: FlutterFlowTheme.of(context)
                                                       .labelSmall
                                                       .override(
@@ -270,7 +297,40 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                 ),
               ),
               FFButtonWidget(
-                onPressed: () async {},
+                onPressed: () async {
+                  if (_selectedIdentityIndex == -1) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select an identity first.')),
+                    );
+                    return;
+                  }
+                  final identity = _identities[_selectedIdentityIndex];
+                  final photoUrl = identity['profile_photo'];
+                  
+                  if (photoUrl == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No photo for this identity.')),
+                    );
+                    return;
+                  }
+
+                  String fullUrl = photoUrl;
+                  if (!photoUrl.startsWith('http')) {
+                      // Adjust base URL for your environment
+                      final baseUrl = 'http://localhost:8000'; 
+                      // For Android emulator use 'http://10.0.2.2:8000'
+                      fullUrl = '$baseUrl$photoUrl';
+                  }
+
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DisplayPassportWidget(
+                        photoUrl: fullUrl,
+                      ),
+                    ),
+                  );
+                },
                 text: 'Display Selected Identity',
                 options: FFButtonOptions(
                   width: 270,

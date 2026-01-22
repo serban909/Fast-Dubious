@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../services/auth_api.dart';
+import '../services/badge_api.dart';
+import '../services/profile_api.dart';
+
 import 'enter_indetity_data_model.dart';
 export 'enter_indetity_data_model.dart';
 
@@ -1281,6 +1285,85 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                         if (_model.formKey.currentState == null ||
                             !_model.formKey.currentState!.validate()) {
                           return;
+                        }
+
+                        final user = AuthApi.currentUser;
+                        if (user == null || user['id'] == null) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('User not logged in')),
+                           );
+                           return;
+                        }
+                        final userId = user['id'] as int;
+
+                        // Basic parsing
+                        final fullName = _model.fullNameTextController?.text.trim() ?? '';
+                        final nameParts = fullName.split(' ');
+                        final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+                        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+                        
+                        // Date conversion (Assuming input might be DD/MM/YYYY or similar, but backend needs YYYY-MM-DD)
+                        // For MVP, sending as is and hoping backend handles or user enters YYYY-MM-DD
+                        // Or basic replace:
+                        var dob = _model.dateOfBirthFieldTextController?.text.trim() ?? '2000-01-01';
+                        if (dob.contains('/')) {
+                           final parts = dob.split('/');
+                           if (parts.length == 3) {
+                             dob = '${parts[2]}-${parts[1]}-${parts[0]}';
+                           }
+                        }
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Submitting Profile...')),
+                        );
+
+                        if (_selectedPhoto == null) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Please upload a photo first.')),
+                           );
+                           return;
+                        }
+
+                        // 1. Create Profile
+                        final profileRes = await ProfileApi.createProfile(
+                          userId: userId,
+                          firstName: firstName,
+                          lastName: lastName,
+                          dob: dob, 
+                          photo: _selectedPhoto,
+                        );
+
+                        if (!profileRes.success) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Profile Error: ${profileRes.error}')),
+                           );
+                           return;
+                        }
+
+                        // 2. Request Badge
+                        final modifiers = {
+                           'description': _model.photoDescriptionTextController?.text ?? '',
+                           'nationality': _model.nationalityFieldTextController?.text ?? '',
+                           'age': _model.ageFieldTextController?.text ?? '',
+                        };
+
+                        final badgeRes = await BadgeApi.createBadge(
+                          userId: userId,
+                          modifiers: modifiers,
+                        );
+
+                        if (badgeRes.success) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Badge request submitted! ID: ${badgeRes.requestId}')),
+                           );
+                           // Navigate to Dashboard
+                           // Navigator.pushNamed(context, DashboardWidget.routePath); 
+                           // Or pop if we came from dashboard
+                           Navigator.pop(context);
+                        } else {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Badge Error: ${badgeRes.error}')),
+                           );
                         }
                       },
                       text: 'Submit Form',

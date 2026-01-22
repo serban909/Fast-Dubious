@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutterflow_ui/flutterflow_ui.dart';
-import 'homePageView.dart' show HomePageWidget;
+import 'home_page_view.dart' show HomePageWidget;
 
 class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   @override

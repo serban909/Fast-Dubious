@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/homePageView.dart';
+import 'pages/home_page_view.dart';
 import 'pages/create_account3_widget.dart';
 import 'pages/dashboard_widget.dart';
 import 'pages/login1_widget.dart';
@@ -7,6 +7,7 @@ import 'pages/choose_identity_widget.dart';
 import 'pages/choose_insurance_widget.dart';
 import 'pages/choose_passport_widget.dart';
 import 'pages/enter_indetity_data_widget.dart';
+import 'pages/enter_car_data_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,9 +35,10 @@ class MyApp extends StatelessWidget {
         ChooseInsuranceWidget.routePath: (context) =>
             const ChooseInsuranceWidget(),
         ChoosePassportWidget.routePath: (context) => const ChoosePassportWidget(),
-    EnterIndetityDataWidget.routePath: (context) =>
-      const EnterIndetityDataWidget(),
+        EnterIndetityDataWidget.routePath: (context) =>
+            const EnterIndetityDataWidget(),
+        EnterCarDataWidget.routePath: (context) => const EnterCarDataWidget(),
       },
     );
   }
-}
+} 

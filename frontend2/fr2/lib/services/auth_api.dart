@@ -12,6 +12,8 @@ class AuthResult {
 }
 
 class AuthApi {
+  static Map<String, dynamic>? currentUser;
+
   static String get _baseUrl {
     if (kIsWeb) {
       return const String.fromEnvironment(
@@ -45,9 +47,10 @@ class AuthApi {
 
     if (response.statusCode == 200) {
       final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      currentUser = payload['user'] as Map<String, dynamic>?;
       return AuthResult(
         success: true,
-        user: payload['user'] as Map<String, dynamic>?,
+        user: currentUser,
       );
     }
 
@@ -79,9 +82,10 @@ class AuthApi {
 
     if (response.statusCode == 201) {
       final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      currentUser = payload['user'] as Map<String, dynamic>?;
       return AuthResult(
         success: true,
-        user: payload['user'] as Map<String, dynamic>?,
+        user: currentUser,
       );
     }
 

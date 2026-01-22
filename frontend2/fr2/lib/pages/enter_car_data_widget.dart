@@ -1,4 +1,5 @@
 import '/flutter_flow/flutter_flow_theme.dart';
+import 'package:fr2/services/vehicle_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'enter_car_data_model.dart';
@@ -1556,6 +1557,27 @@ class _EnterCarDataWidgetState extends State<EnterCarDataWidget> {
                         if (_model.formKey.currentState == null ||
                             !_model.formKey.currentState!.validate()) {
                           return;
+                        }
+                        
+                        // Call API
+                        final result = await VehicleApi.createVehicle(
+                          registrationNumber: _model.inmatriculareTextController.text,
+                          makeModel: _model.modelTextController.text,
+                          vin: _model.idSerieTextController.text,
+                          enginePower: _model.capacitatePutereTextController.text, // e.g. 1390 cm3 / 55 kW
+                          seatsMass: "${_model.nrLocuriTextController.text} / ${_model.masaTotalaTextController.text}" // Combining for now to match backend model
+                        );
+
+                        if (result.success) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Vehicle saved successfully!')),
+                          );
+                          // Maybe go back or clear form
+                          Navigator.pop(context);
+                        } else {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: ${result.error}')),
+                          );
                         }
                       },
                       text: 'Submit Form',

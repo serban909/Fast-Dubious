@@ -7,7 +7,12 @@ export 'display_passport_model.dart';
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 
 class DisplayPassportWidget extends StatefulWidget {
-  const DisplayPassportWidget({super.key});
+  const DisplayPassportWidget({
+    super.key,
+    required this.photoUrl,
+  });
+
+  final String photoUrl;
 
   static String routeName = 'DisplayPassport';
   static String routePath = '/displayPassport';
@@ -64,11 +69,13 @@ class _DisplayPassportWidgetState extends State<DisplayPassportWidget> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      'https://picsum.photos/seed/965/600',
+                      widget.photoUrl,
                       width: double.infinity,
                       height: MediaQuery.sizeOf(context).height * 0.8,
                       fit: BoxFit.cover,
-                      alignment: Alignment(0, 0),
+                      alignment: const Alignment(0, 0),
+                      errorBuilder: (context, error, stackTrace) => 
+                        const Center(child: Icon(Icons.broken_image, size: 50)),
                     ),
                   ),
                 ),

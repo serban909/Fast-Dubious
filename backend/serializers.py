@@ -2,8 +2,20 @@
 Serializers for the badges backend.
 """
 from rest_framework import serializers
-from backend.models import BadgeRequest, UserProfile
+from backend.models import BadgeRequest, UserProfile, Vehicle, InsurancePolicy
 
+class InsurancePolicySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InsurancePolicy
+        fields = '__all__'
+
+class VehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle
+        fields = '__all__'
+        extra_kwargs = {
+            'owner': {'required': False}  # We'll attach the owner in the view
+        }
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:

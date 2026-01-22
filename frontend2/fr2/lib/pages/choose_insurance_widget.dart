@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutterflow_ui/flutterflow_ui.dart';
+import 'package:fr2/pages/enter_car_data_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '../services/insurance_api.dart';
+import 'display_passport_widget.dart'; // Reuse for display
 
 class ChooseInsuranceWidget extends StatefulWidget {
   const ChooseInsuranceWidget({super.key});
@@ -15,22 +18,25 @@ class ChooseInsuranceWidget extends StatefulWidget {
 
 class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  int _selectedInsuranceIndex = 0;
+  int _selectedInsuranceIndex = -1;
+  List<dynamic> _insurances = [];
+  bool _isLoading = true;
 
-  final List<Map<String, String>> _insurances = const [
-    {
-      'name': 'Elaine Robertson',
-      'email': 'elaine@companyname.com',
-      'image':
-          'https://images.unsplash.com/photo-1598346762291-aee88549193f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NTV8fHVzZXJ8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'John Sanders',
-      'email': 'john@companyname.com',
-      'image':
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=60',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchPolicies();
+  }
+
+  Future<void> _fetchPolicies() async {
+    final policies = await InsuranceApi.getMyPolicies();
+    if (mounted) {
+      setState(() {
+        _insurances = policies;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,16 +115,31 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                             ),
                       ),
                     ),
-                    ListView.separated(
+                    _isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : (_insurances.isEmpty 
+                        ? const Center(child: Text("No insurance policies found."))
+                        : ListView.separated(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _insurances.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (context, index) =>
                           const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final insurance = _insurances[index];
                         final isSelected = _selectedInsuranceIndex == index;
+                        
+                        // Map backend fields
+                        final name = "Policy ${insurance['series']}/${insurance['number']}";
+                        final subtitle = "Valid: ${insurance['validity_start']} - ${insurance['validity_end']}";
+                        // Image URL logic
+                        String? imageUrl = insurance['policy_document'];
+                        if (imageUrl != null && !imageUrl.startsWith('http')) {
+                            imageUrl = "http://localhost:8000$imageUrl";
+                        }
+                        // Fallback icon if no image
+                        final hasImage = imageUrl != null;
 
                         return InkWell(
                           splashColor: Colors.transparent,
@@ -136,7 +157,7 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                               color: isSelected
                                   ? FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.08)
+                                      .withValues(alpha: 0.08)
                                   : FlutterFlowTheme.of(context)
                                       .secondaryBackground,
                               boxShadow: const [
@@ -156,12 +177,15 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(40),
-                                    child: Image.network(
-                                      insurance['image']!,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: hasImage
+                                      ? Image.network(
+                                          imageUrl!,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (c, e, s) => const Icon(Icons.description, size: 40),
+                                        )
+                                      : const Icon(Icons.description, size: 40, color: Colors.grey),
                                   ),
                                   Expanded(
                                     child: Row(
@@ -183,7 +207,7 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                insurance['name']!,
+                                                name,
                                                 style: FlutterFlowTheme.of(context)
                                                     .bodyLarge
                                                     .override(
@@ -208,7 +232,7 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                                                   0,
                                                 ),
                                                 child: Text(
-                                                  insurance['email']!,
+                                                  subtitle,
                                                   style: FlutterFlowTheme.of(context)
                                                       .labelSmall
                                                       .override(
@@ -257,7 +281,7 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                           ),
                         );
                       },
-                    ),
+                    )),
                   ],
                 ),
               ),
@@ -274,8 +298,35 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                         20,
                       ),
                       child: FFButtonWidget(
-                        onPressed: () {
-                          print('DisplaySelectedInsBtn pressed ...');
+                        onPressed: () async {
+                           if (_selectedInsuranceIndex == -1) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please select an insurance policy first.')),
+                            );
+                            return;
+                          }
+                          final insurance = _insurances[_selectedInsuranceIndex];
+                          String? imageUrl = insurance['policy_document'];
+                          
+                          if (imageUrl == null) {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No document image for this policy.')),
+                            );
+                            return;
+                          }
+                          
+                          if (!imageUrl.startsWith('http')) {
+                            imageUrl = "http://localhost:8000$imageUrl";
+                          }
+
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DisplayPassportWidget(
+                                photoUrl: imageUrl!, // Reuse the passport display logic
+                              ),
+                            ),
+                          );
                         },
                         text: 'Display Selected Insurance',
                         options: FFButtonOptions(
@@ -325,9 +376,10 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                       ),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          // context.pushNamed(
-                          //   EnterCarDataWidget.routeName,
-                          // );
+                           Navigator.pushNamed(
+                             context,
+                             EnterCarDataWidget.routePath,
+                           );
                         },
                         text: 'Make  a new Insurance',
                         options: FFButtonOptions(

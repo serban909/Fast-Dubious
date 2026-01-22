@@ -7,10 +7,11 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from views import BadgeViewSet, login_view, signup_view
+from views import BadgeViewSet, login_view, signup_view, ProfileViewSet
 
 router = DefaultRouter()
 router.register(r'badges', BadgeViewSet, basename='badge')
+router.register(r'profile', ProfileViewSet, basename='profile')
 
 urlpatterns = [
     path('', lambda request: redirect('admin/', permanent=False)), # Redirect root to admin

@@ -1,10 +1,12 @@
 import uuid
 from django.db import models
+from django.conf import settings
 
 class UserProfile(models.Model):
     """
     Represents the user data stored in MySQL.
     """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='profile')
     id_code = models.CharField(max_length=20, unique=True) # Unique Employee/User ID
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)

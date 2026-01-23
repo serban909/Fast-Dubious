@@ -64,46 +64,43 @@ class _DisplayPassportWidgetState extends State<DisplayPassportWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional(0, -1),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      widget.photoUrl,
-                      width: double.infinity,
-                      height: MediaQuery.sizeOf(context).height * 0.8,
-                      fit: BoxFit.cover,
-                      alignment: const Alignment(0, 0),
-                      errorBuilder: (context, error, stackTrace) => 
-                        const Center(child: Icon(Icons.broken_image, size: 50)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        widget.photoUrl,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => 
+                          const Center(child: Icon(Icons.broken_image, size: 50)),
+                      ),
                     ),
                   ),
                 ),
               ),
-              FFButtonWidget(
-                onPressed: () {
-                  print('Button pressed ...');
-                },
-                text: 'Button',
-                options: FFButtonOptions(
-                  width: double.infinity,
-                  height: 40,
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                  iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                  color: FlutterFlowTheme.of(context).primary,
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                    font: 'Inter Tight',
-                    color: Colors.white,
-                    letterSpacing: 0.0,
-                    fontWeight: FlutterFlowTheme.of(
-                      context,
-                    ).titleSmall.fontWeight,
-                    fontStyle: FlutterFlowTheme.of(
-                      context,
-                    ).titleSmall.fontStyle,
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: FFButtonWidget(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  text: 'Back to List',
+                  options: FFButtonOptions(
+                    width: double.infinity,
+                    height: 50,
+                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                    iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                      font: 'Inter Tight',
+                      color: Colors.white,
+                      letterSpacing: 0.0,
+                    ),
+                    elevation: 3,
+                    borderRadius: BorderRadius.circular(25),
                   ),
-                  elevation: 0,
-                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ],

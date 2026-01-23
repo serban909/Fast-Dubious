@@ -84,10 +84,12 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -144,6 +146,7 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                         final name = "${identity['first_name']} ${identity['last_name']}";
                         final subtitle = identity['id_code'] ?? 'No Code';
                         final photoUrl = identity['profile_photo'];
+                        final badgeUrl = identity['generated_badge'];
 
                         return InkWell(
                           splashColor: Colors.transparent,
@@ -177,27 +180,41 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                               padding: const EdgeInsets.all(12),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(40),
-                                    child: photoUrl != null 
-                                      ? Image.network(
-                                          photoUrl.startsWith('http') 
-                                            ? photoUrl 
-                                            : "http://localhost:8000$photoUrl",
-                                          width: 40,
-                                          height: 40,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (c, e, s) => Container(color: Colors.grey, width: 40, height: 40, child: const Icon(Icons.person)),
-                                        )
-                                      : Container(
-                                          width: 40, 
-                                          height: 40, 
-                                          color: Colors.grey.shade300, 
-                                          child: const Icon(Icons.person),
-                                        ),
-                                  ),
+                                  if (badgeUrl != null)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        badgeUrl.startsWith('http') 
+                                            ? badgeUrl 
+                                            : "http://localhost:8000$badgeUrl",
+                                        width: 80,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, e, s) => Container(color: Colors.grey, width: 80, height: 50, child: const Icon(Icons.badge)),
+                                      ),
+                                    )
+                                  else 
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(40),
+                                      child: photoUrl != null 
+                                        ? Image.network(
+                                            photoUrl.startsWith('http') 
+                                              ? photoUrl 
+                                              : "http://localhost:8000$photoUrl",
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (c, e, s) => Container(color: Colors.grey, width: 40, height: 40, child: const Icon(Icons.person)),
+                                          )
+                                        : Container(
+                                            width: 40, 
+                                            height: 40, 
+                                            color: Colors.grey.shade300, 
+                                            child: const Icon(Icons.person),
+                                          ),
+                                    ),
                                   Expanded(
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -263,26 +280,53 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                                             ],
                                           ),
                                         ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                            70,
-                                            0,
-                                            0,
-                                            0,
-                                          ),
-                                          child: Icon(
-                                            isSelected
-                                                ? Icons.radio_button_checked
-                                                : Icons.radio_button_off,
-                                            color: isSelected
-                                                ? FlutterFlowTheme.of(context)
-                                                    .primary
-                                                : FlutterFlowTheme.of(context)
-                                                    .secondaryText,
-                                            size: 24,
-                                          ),
+                                        IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: const Text('Delete Identity?'),
+                                                content: const Text('Are you sure you want to remove this identity? This cannot be undone.'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, false),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, true),
+                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            
+                                            if (confirm == true) {
+                                              final success = await ProfileApi.deleteProfile(profileId: identity['id']);
+                                              if (success) {
+                                                _fetchProfiles();
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Identity removed')),
+                                                );
+                                              } else {
+                                                 ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Failed to delete identity')),
+                                                );
+                                              }
+                                            }
+                                          },
                                         ),
+                                        if (isSelected)
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 12),
+                                              child: Icon(
+                                                Icons.check_circle,
+                                                color: FlutterFlowTheme.of(context).primary,
+                                                size: 24,
+                                              ),
+                                            ),
                                       ],
                                     ),
                                   ),
@@ -296,6 +340,8 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                   ],
                 ),
               ),
+              ),
+              ),
               FFButtonWidget(
                 onPressed: () async {
                   if (_selectedIdentityIndex == -1) {
@@ -306,20 +352,23 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                   }
                   final identity = _identities[_selectedIdentityIndex];
                   final photoUrl = identity['profile_photo'];
+                  final badgeUrl = identity['generated_badge'];
                   
-                  if (photoUrl == null) {
+                  final urlToUse = badgeUrl ?? photoUrl;
+
+                  if (urlToUse == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No photo for this identity.')),
+                      const SnackBar(content: Text('No photo or badge for this identity.')),
                     );
                     return;
                   }
 
-                  String fullUrl = photoUrl;
-                  if (!photoUrl.startsWith('http')) {
+                  String fullUrl = urlToUse;
+                  if (!urlToUse.startsWith('http')) {
                       // Adjust base URL for your environment
                       final baseUrl = 'http://localhost:8000'; 
                       // For Android emulator use 'http://10.0.2.2:8000'
-                      fullUrl = '$baseUrl$photoUrl';
+                      fullUrl = '$baseUrl$urlToUse';
                   }
 
                   await Navigator.push(
@@ -355,7 +404,26 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
                 ),
               ),
               FFButtonWidget(
-                onPressed: () async {},
+                onPressed: () async {
+                  if (_selectedIdentityIndex == -1) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select an identity first.')),
+                    );
+                    return;
+                  }
+                  final identity = _identities[_selectedIdentityIndex];
+                  
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EnterIndetityDataWidget(
+                        identityToEdit: identity,
+                      ),
+                    ),
+                  );
+                  // Refresh list on return
+                  _fetchProfiles();
+                },
                 text: 'Edit Selected Identity',
                 options: FFButtonOptions(
                   width: 270,
@@ -381,10 +449,12 @@ class _ChooseIdentityWidgetState extends State<ChooseIdentityWidget> {
               ),
               FFButtonWidget(
                 onPressed: () async {
-                  Navigator.pushNamed(
+                  await Navigator.pushNamed(
                     context,
                     EnterIndetityDataWidget.routePath,
                   );
+                  // Refresh the list after returning from the creation page
+                  _fetchProfiles();
                 },
                 text: 'Make  a new Identity',
                 options: FFButtonOptions(

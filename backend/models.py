@@ -56,6 +56,9 @@ class BadgeRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     
+    # Optional: Source image for this specific request (overrides user profile photo)
+    source_image = models.ImageField(upload_to='badges/temp/', null=True, blank=True)
+
     # AI Configuration
     ai_prompt_modifiers = models.JSONField(default=dict) # e.g. {"mustache": true}
     

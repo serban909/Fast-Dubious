@@ -18,9 +18,17 @@ class VehicleSerializer(serializers.ModelSerializer):
         }
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    generated_badge = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        fields = ['id_code', 'first_name', 'last_name', 'date_of_birth', 'profile_photo']
+        fields = ['id', 'id_code', 'first_name', 'last_name', 'date_of_birth', 'profile_photo', 'generated_badge', 'address']
+
+    def get_generated_badge(self, obj):
+        badge_req = obj.badgerequest_set.filter(status='COMPLETED').order_by('-created_at').first()
+        if badge_req and badge_req.final_badge:
+            return badge_req.final_badge.url
+        return None
 
 
 class BadgeRequestSerializer(serializers.ModelSerializer):

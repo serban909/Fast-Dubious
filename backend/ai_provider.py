@@ -135,18 +135,11 @@ class GeminiFaceAdapter(IFaceModifier):
             return source_image_path
 
 class BananaFaceAdapter(IFaceModifier):
-    def alter_face(self, source_image_path: str, mod_dict_or_prompt) -> str:
+    def alter_face(self, source_image_path: str, mod_dict_or_prompt) -> ContentFile:
         # Compatibility wrapper
         prompt = mod_dict_or_prompt
         if isinstance(mod_dict_or_prompt, dict):
             prompt = f"person, face closeup, {', '.join([k for k, v in mod_dict_or_prompt.items() if v])}"
-        
-        # ... logic as before ...
-        pass
-
-    def alter_face(self, source_image_path: str, modifiers: dict) -> ContentFile:
-        # 1. Prepare Prompt
-        prompt = f"person, face closeup, {', '.join([k for k, v in modifiers.items() if v])}"
         
         # 2. Encode File
         with open(source_image_path, "rb") as f:
@@ -155,7 +148,7 @@ class BananaFaceAdapter(IFaceModifier):
         # 3. Call Nano Banana / Stable Diffusion API
         # Note: This is a pseudo-implementation of a generic SD API payload
         payload = {
-            "apiKey": settings.BANANA_API_KEY,
+            "apiKey": getattr(settings, 'BANANA_API_KEY', ''),
             "modelInputs": {
                 "prompt": prompt,
                 "init_image": img_base64,
@@ -164,12 +157,38 @@ class BananaFaceAdapter(IFaceModifier):
             }
         }
         
-        response = requests.post(settings.BANANA_URL, json=payload, timeout=60)
-        response.raise_for_status()
-        
-        # 4. Decode Response
-        output_base64 = response.json().get('modelOutputs', [{}])[0].get('image_base64')
-        if not output_base64:
-            raise ValueError("Empty response from AI provider")
+        try:
+            response = requests.post(getattr(settings, 'BANANA_URL', 'http://localhost'), json=payload, timeout=60)
+            response.raise_for_status()
             
-        return ContentFile(base64.b64decode(output_base64), name="altered_face.png")
+            # 4. Decode Response
+            output_base64 = response.json().get('modelOutputs', [{}])[0].get('image_base64')
+            if not output_base64:
+                raise ValueError("Empty response from AI provider")
+                
+            return ContentFile(base64.b64decode(output_base64), name="altered_face.png")
+        except Exception as e:
+            print(f"Banana API Error: {e}")
+            raise e
+
+class LocalDiffusersAdapter(IFaceModifier):
+    def alter_face(self, source_image_path: str, prompt: str) -> str:
+        """
+        Uses the local AI Editor (DirectML/Diffusers) to alter the face.
+        """
+        try:
+            from backend.ai_editor import AIEditor
+            
+            output_dir = os.path.join(settings.BASE_DIR, 'processed_faces')
+            os.makedirs(output_dir, exist_ok=True)
+            
+            filename = os.path.basename(source_image_path)
+            name, ext = os.path.splitext(filename)
+            output_path = os.path.join(output_dir, f"{name}_diffused{ext}")
+            
+            print(f"🎨 LocalDiffusersAdapter: Editing {source_image_path} with prompt: '{prompt}'")
+            editor = AIEditor.get_instance()
+            return editor.edit_image(source_image_path, prompt, output_path)
+        except Exception as e:
+            print(f"❌ LocalDiffusersAdapter failed: {e}")
+            raise e

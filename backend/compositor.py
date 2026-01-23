@@ -8,9 +8,31 @@ class BadgeCompositor:
     def __init__(self, template_path=None, font_path=None):
         from django.conf import settings
         base_dir = getattr(settings, "BASE_DIR", os.getcwd())
-        self.TEMPLATE_PATH = template_path or os.path.join(base_dir, "templates", "CIROU_temp.png")
-        self.FONT_PATH = font_path or os.path.join(base_dir, "assets", "fonts", "Roboto-Bold.ttf")
-    
+        
+        # Robust path finding
+        self.TEMPLATE_PATH = template_path
+        if not self.TEMPLATE_PATH:
+             candidate = os.path.join(base_dir, "templates", "CIROU_temp.png")
+             if not os.path.exists(candidate):
+                 # Try walking up or checking backend subdir if we are in root
+                 candidate_alt = os.path.join(base_dir, "backend", "templates", "CIROU_temp.png")
+                 if os.path.exists(candidate_alt):
+                     candidate = candidate_alt
+             self.TEMPLATE_PATH = candidate
+             
+        self.FONT_PATH = font_path
+        if not self.FONT_PATH:
+             candidate = os.path.join(base_dir, "assets", "fonts", "Roboto-Bold.ttf")
+             if not os.path.exists(candidate):
+                 candidate_alt = os.path.join(base_dir, "backend", "assets", "fonts", "Roboto-Bold.ttf")
+                 if os.path.exists(candidate_alt):
+                    candidate = candidate_alt
+             self.FONT_PATH = candidate
+
+        print(f"DEBUG: BadgeCompositor using template: {self.TEMPLATE_PATH}")
+        if not os.path.exists(self.TEMPLATE_PATH):
+            print(f"ERROR: Template not found at {self.TEMPLATE_PATH}")
+
     #TEMPLATE_PATH = os.path.join(settings.BASE_DIR, 'templates', 'CIROU_temp.png')
     #FONT_PATH = os.path.join(settings.BASE_DIR, 'assets', 'fonts', 'Roboto-Bold.ttf')
 

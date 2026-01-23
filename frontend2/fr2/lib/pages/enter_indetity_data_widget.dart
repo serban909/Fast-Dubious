@@ -14,7 +14,9 @@ import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class EnterIndetityDataWidget extends StatefulWidget {
-  const EnterIndetityDataWidget({super.key});
+  const EnterIndetityDataWidget({super.key, this.identityToEdit});
+
+  final Map<String, dynamic>? identityToEdit;
 
   static String routeName = 'EnterIndetityData';
   static String routePath = '/enterIndetityData';
@@ -59,6 +61,21 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
     _model.photoDescriptionTextController ??= TextEditingController();
     _model.photoDescriptionFocusNode ??= FocusNode();
     _model.photoDescriptionFocusNode!.addListener(() => safeSetState(() {}));
+
+    if (widget.identityToEdit != null) {
+      final id = widget.identityToEdit!;
+      final fname = id['first_name'] ?? '';
+      final lname = id['last_name'] ?? '';
+      _model.fullNameTextController!.text = '$fname $lname'.trim();
+      
+      final dob = id['date_of_birth'];
+      if (dob != null) {
+         _model.dateOfBirthFieldTextController!.text = dob;
+      }
+      
+      // Attempt to map address to nationality if possible, or just leave empty
+    }
+
     animationsMap.addAll({
       'containerOnPageLoadAnimation': AnimationInfo(
         trigger: AnimationTrigger.onPageLoad,
@@ -712,253 +729,85 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                       // _model.dateOfBirthFieldMask,
                                     ],
                                   ),
-                                  Text(
-                                    'Randomize data',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: 'Inter Tight',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontStyle,
-                                        ),
-                                  ),
-                                  FlutterFlowChoiceChips(
-                                    options: [ChipData('Yes'), ChipData('No')],
-                                    onChanged: (val) => safeSetState(
-                                      () => _model.choiceChipsRndDataValue =
-                                          val?.firstOrNull,
-                                    ),
-                                    selectedChipStyle: ChipStyle(
-                                      backgroundColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).accent2,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: 'Inter Tight',
-                                            color: FlutterFlowTheme.of(
-                                              context,
-                                            ).primaryText,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FlutterFlowTheme.of(
-                                              context,
-                                            ).bodyMedium.fontWeight,
-                                            fontStyle: FlutterFlowTheme.of(
-                                              context,
-                                            ).bodyMedium.fontStyle,
-                                          ),
-                                      iconColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).primaryText,
-                                      iconSize: 18,
-                                      elevation: 0,
-                                      borderColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).secondary,
-                                      borderWidth: 2,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    unselectedChipStyle: ChipStyle(
-                                      backgroundColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).primaryBackground,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: 'Inter Tight',
-                                            color: FlutterFlowTheme.of(
-                                              context,
-                                            ).secondaryText,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FlutterFlowTheme.of(
-                                              context,
-                                            ).bodyMedium.fontWeight,
-                                            fontStyle: FlutterFlowTheme.of(
-                                              context,
-                                            ).bodyMedium.fontStyle,
-                                          ),
-                                      iconColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).secondaryText,
-                                      iconSize: 18,
-                                      elevation: 0,
-                                      borderColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).alternate,
-                                      borderWidth: 2,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    chipSpacing: 12,
-                                    rowSpacing: 12,
-                                    multiselect: false,
-                                    alignment: WrapAlignment.start,
+                                  TextFormField(
                                     controller:
-                                        _model.choiceChipsRndDataValueController ??=
-                                            FormFieldController<List<String>>(
-                                              [],
-                                            ),
-                                    wrapped: true,
-                                  ),
-                                  Text(
-                                    'Gender',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: 'Inter Tight',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontStyle,
-                                        ),
-                                  ),
-                                  FlutterFlowChoiceChips(
-                                    options: [
-                                      ChipData('Female'),
-                                      ChipData('Male'),
-                                      ChipData('Other'),
-                                    ],
-                                    onChanged: (val) => safeSetState(
-                                      () => _model.choiceChipsGenderValue =
-                                          val?.firstOrNull,
-                                    ),
-                                    selectedChipStyle: ChipStyle(
-                                      backgroundColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).accent2,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
+                                        _model.addressFieldTextController,
+                                    focusNode: _model.addressFieldFocusNode,
+                                    obscureText: false,
+                                    decoration: InputDecoration(
+                                      labelText: 'Address',
+                                      labelStyle: FlutterFlowTheme.of(context)
+                                          .labelLarge
                                           .override(
                                             font: 'Inter Tight',
-                                            color: FlutterFlowTheme.of(
-                                              context,
-                                            ).primaryText,
                                             letterSpacing: 0.0,
                                             fontWeight: FlutterFlowTheme.of(
                                               context,
-                                            ).bodyMedium.fontWeight,
+                                            ).labelLarge.fontWeight,
                                             fontStyle: FlutterFlowTheme.of(
                                               context,
-                                            ).bodyMedium.fontStyle,
+                                            ).labelLarge.fontStyle,
                                           ),
-                                      iconColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).primaryText,
-                                      iconSize: 18,
-                                      elevation: 0,
-                                      borderColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).secondary,
-                                      borderWidth: 2,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    unselectedChipStyle: ChipStyle(
-                                      backgroundColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).primaryBackground,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
+                                      hintStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
                                           .override(
                                             font: 'Inter Tight',
-                                            color: FlutterFlowTheme.of(
-                                              context,
-                                            ).secondaryText,
                                             letterSpacing: 0.0,
                                             fontWeight: FlutterFlowTheme.of(
                                               context,
-                                            ).bodyMedium.fontWeight,
+                                            ).labelMedium.fontWeight,
                                             fontStyle: FlutterFlowTheme.of(
                                               context,
-                                            ).bodyMedium.fontStyle,
+                                            ).labelMedium.fontStyle,
                                           ),
-                                      iconColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).secondaryText,
-                                      iconSize: 18,
-                                      elevation: 0,
-                                      borderColor: FlutterFlowTheme.of(
-                                        context,
-                                      ).alternate,
-                                      borderWidth: 2,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    chipSpacing: 12,
-                                    rowSpacing: 12,
-                                    multiselect: false,
-                                    alignment: WrapAlignment.start,
-                                    controller:
-                                        _model.choiceChipsGenderValueController ??=
-                                            FormFieldController<List<String>>(
-                                              [],
-                                            ),
-                                    wrapped: true,
-                                  ),
-                                  Text(
-                                    'Ai image editor Provider',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: 'Inter Tight',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FlutterFlowTheme.of(
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
                                             context,
-                                          ).labelMedium.fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontStyle,
+                                          ).alternate,
+                                          width: 2,
                                         ),
-                                  ),
-                                  FlutterFlowDropDown<String>(
-                                    controller:
-                                        _model.dropDownAiProvValueController ??=
-                                            FormFieldController<String>(null),
-                                    options: [
-                                      'Insurance Provider 1',
-                                      'Insurance Provider 2',
-                                      'Insurance Provider 3',
-                                    ],
-                                    onChanged: (val) => safeSetState(
-                                      () => _model.dropDownAiProvValue = val,
-                                    ),
-                                    width: double.infinity,
-                                    height: 52,
-                                    searchHintTextStyle:
-                                        FlutterFlowTheme.of(
-                                          context,
-                                        ).labelMedium.override(
-                                          font: 'Inter Tight',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(
-                                            context,
-                                          ).labelMedium.fontStyle,
-                                        ),
-                                    searchTextStyle:
-                                        FlutterFlowTheme.of(
-                                          context,
-                                        ).bodyMedium.override(
-                                          font: 'Inter Tight',
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
                                           color: FlutterFlowTheme.of(
                                             context,
                                           ).primary,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FlutterFlowTheme.of(
-                                            context,
-                                          ).bodyMedium.fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(
-                                            context,
-                                          ).bodyMedium.fontStyle,
+                                          width: 2,
                                         ),
-                                    textStyle: FlutterFlowTheme.of(context)
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).error,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).error,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      filled: true,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                            16,
+                                            20,
+                                            16,
+                                            20,
+                                          ),
+                                    ),
+                                    style: FlutterFlowTheme.of(context)
                                         .bodyLarge
                                         .override(
                                           font: 'Inter Tight',
@@ -970,37 +819,133 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                             context,
                                           ).bodyLarge.fontStyle,
                                         ),
-                                    hintText: 'Select one...',
-                                    searchHintText: 'Search for an item...',
-                                    searchCursorColor: FlutterFlowTheme.of(
+                                    cursorColor: FlutterFlowTheme.of(
                                       context,
                                     ).primary,
-                                    icon: Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(
-                                        context,
-                                      ).secondaryText,
-                                      size: 24,
+                                    validator: _model
+                                        .addressFieldTextControllerValidator
+                                        .asValidator(context),
+                                  ),
+                                  TextFormField(
+                                    controller:
+                                        _model.placeOfBirthFieldTextController,
+                                    focusNode: _model.placeOfBirthFieldFocusNode,
+                                    obscureText: false,
+                                    decoration: InputDecoration(
+                                      labelText: 'Place of Birth',
+                                      labelStyle: FlutterFlowTheme.of(context)
+                                          .labelLarge
+                                          .override(
+                                            font: 'Inter Tight',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FlutterFlowTheme.of(
+                                              context,
+                                            ).labelLarge.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(
+                                              context,
+                                            ).labelLarge.fontStyle,
+                                          ),
+                                      hintStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .override(
+                                            font: 'Inter Tight',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FlutterFlowTheme.of(
+                                              context,
+                                            ).labelMedium.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(
+                                              context,
+                                            ).labelMedium.fontStyle,
+                                          ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).alternate,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).primary,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).error,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(
+                                            context,
+                                          ).error,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      filled: true,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                            16,
+                                            20,
+                                            16,
+                                            20,
+                                          ),
                                     ),
-                                    fillColor: FlutterFlowTheme.of(
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyLarge
+                                        .override(
+                                          font: 'Inter Tight',
+                                          letterSpacing: 0.0,
+                                          fontWeight: FlutterFlowTheme.of(
+                                            context,
+                                          ).bodyLarge.fontWeight,
+                                          fontStyle: FlutterFlowTheme.of(
+                                            context,
+                                          ).bodyLarge.fontStyle,
+                                        ),
+                                    cursorColor: FlutterFlowTheme.of(
                                       context,
-                                    ).secondaryBackground,
-                                    elevation: 2,
-                                    borderColor: FlutterFlowTheme.of(
-                                      context,
-                                    ).alternate,
-                                    borderWidth: 2,
-                                    borderRadius: 12,
-                                    margin: EdgeInsetsDirectional.fromSTEB(
-                                      12,
-                                      4,
-                                      8,
-                                      4,
+                                    ).primary,
+                                    validator: _model
+                                        .placeOfBirthFieldTextControllerValidator
+                                        .asValidator(context),
+                                  ),
+                                  CheckboxListTile(
+                                    value: _model.shouldRandomize,
+                                    onChanged: (newValue) async {
+                                      safeSetState(() => _model.shouldRandomize = newValue!);
+                                    },
+                                    title: Text(
+                                      'Randomize missing data',
+                                      style: FlutterFlowTheme.of(context).bodyLarge.override(
+                                            font: 'Inter Tight',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                          ),
                                     ),
-                                    hidesUnderline: true,
-                                    isOverButton: true,
-                                    isSearchable: true,
-                                    isMultiSelect: false,
+                                    tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                    activeColor: FlutterFlowTheme.of(context).primary,
+                                    checkColor: FlutterFlowTheme.of(context).info,
+                                    dense: false,
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                    contentPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
@@ -1266,6 +1211,35 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                                       ],
                                     ),
                                   ),
+                                  CheckboxListTile(
+                                    value: _model.shouldRandomize,
+                                    onChanged: (newValue) async {
+                                      safeSetState(() => _model.shouldRandomize = newValue!);
+                                    },
+                                    title: Text(
+                                      'Randomize missing data',
+                                      style: FlutterFlowTheme.of(context).bodyLarge.override(
+                                            font: 'Inter Tight',
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                    subtitle: Text(
+                                      'If unchecked, empty fields will appear blank on the badge.',
+                                      style: FlutterFlowTheme.of(context).labelMedium.override(
+                                            font: 'Inter Tight',
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                    tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                    activeColor: FlutterFlowTheme.of(context).primary,
+                                    checkColor: FlutterFlowTheme.of(context).info,
+                                    dense: false,
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                    contentPadding: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
                                 ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 32)),
                               ),
                             ),
@@ -1314,24 +1288,42 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                         }
 
                         ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(content: Text('Submitting Profile...')),
+                             const SnackBar(content: Text('Submitting Profile...')),
                         );
 
-                        if (_selectedPhoto == null) {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(content: Text('Please upload a photo first.')),
+                        ProfileResult profileRes;
+
+                        if (widget.identityToEdit != null) {
+                           // EDIT MODE
+                           final profileId = widget.identityToEdit!['id'] as int;
+                           profileRes = await ProfileApi.updateProfile(
+                             profileId: profileId,
+                             firstName: firstName,
+                             lastName: lastName,
+                             dob: dob,
+                             photo: _selectedPhoto,
                            );
-                           return;
+                        } else {
+                           // CREATE MODE
+                            if (_selectedPhoto == null) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 const SnackBar(content: Text('Please upload a photo first.')),
+                               );
+                               return;
+                            }
+                            profileRes = await ProfileApi.createProfile(
+                              userId: userId,
+                              firstName: firstName,
+                              lastName: lastName,
+                              dob: dob, 
+                              photo: _selectedPhoto,
+                              nationality: _model.nationalityFieldTextController?.text ?? '',
+                              address: _model.addressFieldTextController?.text ?? '',
+                              placeOfBirth: _model.placeOfBirthFieldTextController?.text ?? '',
+                              description: _model.photoDescriptionTextController?.text ?? '',
+                              randomize: _model.shouldRandomize,
+                            );
                         }
-
-                        // 1. Create Profile
-                        final profileRes = await ProfileApi.createProfile(
-                          userId: userId,
-                          firstName: firstName,
-                          lastName: lastName,
-                          dob: dob, 
-                          photo: _selectedPhoto,
-                        );
 
                         if (!profileRes.success) {
                            ScaffoldMessenger.of(context).showSnackBar(
@@ -1340,31 +1332,25 @@ class _EnterIndetityDataWidgetState extends State<EnterIndetityDataWidget>
                            return;
                         }
 
-                        // 2. Request Badge
-                        final modifiers = {
-                           'description': _model.photoDescriptionTextController?.text ?? '',
-                           'nationality': _model.nationalityFieldTextController?.text ?? '',
-                           'age': _model.ageFieldTextController?.text ?? '',
-                        };
+                        // 2. Request Badge (Only on Create for now, or if explicitly requested)
+                        // Handled automatically by createProfile in backend now.
+                        /*
+                        if (widget.identityToEdit == null) {
+                            final modifiers = {
+                               'description': _model.photoDescriptionTextController?.text ?? '',
+                               'nationality': _model.nationalityFieldTextController?.text ?? '',
+                               'age': _model.ageFieldTextController?.text ?? '',
+                            };
 
-                        final badgeRes = await BadgeApi.createBadge(
-                          userId: userId,
-                          modifiers: modifiers,
-                        );
-
-                        if (badgeRes.success) {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(content: Text('Badge request submitted! ID: ${badgeRes.requestId}')),
-                           );
-                           // Navigate to Dashboard
-                           // Navigator.pushNamed(context, DashboardWidget.routePath); 
-                           // Or pop if we came from dashboard
-                           Navigator.pop(context);
-                        } else {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(content: Text('Badge Error: ${badgeRes.error}')),
-                           );
+                            await BadgeApi.createBadge(
+                              userId: userId,
+                              modifiers: modifiers,
+                            );
                         }
+                        */
+                        
+                        // Navigate back or show success
+                        Navigator.pop(context);
                       },
                       text: 'Submit Form',
                       options: FFButtonOptions(

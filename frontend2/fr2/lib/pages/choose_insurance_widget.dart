@@ -252,26 +252,53 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                                             ],
                                           ),
                                         ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                            70,
-                                            0,
-                                            0,
-                                            0,
-                                          ),
-                                          child: Icon(
-                                            isSelected
-                                                ? Icons.radio_button_checked
-                                                : Icons.radio_button_off,
-                                            color: isSelected
-                                                ? FlutterFlowTheme.of(context)
-                                                    .primary
-                                                : FlutterFlowTheme.of(context)
-                                                    .secondaryText,
-                                            size: 24,
-                                          ),
+                                        IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: const Text('Delete Policy?'),
+                                                content: const Text('Are you sure you want to remove this insurance policy? This cannot be undone.'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, false),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, true),
+                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            
+                                            if (confirm == true) {
+                                              final success = await InsuranceApi.deletePolicy(policyId: insurance['id']);
+                                              if (success) {
+                                                _fetchPolicies();
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Policy removed')),
+                                                );
+                                              } else {
+                                                 ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Failed to delete policy')),
+                                                );
+                                              }
+                                            }
+                                          },
                                         ),
+                                        if (isSelected)
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 12),
+                                              child: Icon(
+                                                Icons.check_circle,
+                                                color: FlutterFlowTheme.of(context).primary,
+                                                size: 24,
+                                              ),
+                                            ),
                                       ],
                                     ),
                                   ),
@@ -298,35 +325,8 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                         20,
                       ),
                       child: FFButtonWidget(
-                        onPressed: () async {
-                           if (_selectedInsuranceIndex == -1) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please select an insurance policy first.')),
-                            );
-                            return;
-                          }
-                          final insurance = _insurances[_selectedInsuranceIndex];
-                          String? imageUrl = insurance['policy_document'];
-                          
-                          if (imageUrl == null) {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('No document image for this policy.')),
-                            );
-                            return;
-                          }
-                          
-                          if (!imageUrl.startsWith('http')) {
-                            imageUrl = "http://localhost:8000$imageUrl";
-                          }
-
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DisplayPassportWidget(
-                                photoUrl: imageUrl!, // Reuse the passport display logic
-                              ),
-                            ),
-                          );
+                        onPressed: () {
+                          print('DisplaySelectedInsBtn pressed ...');
                         },
                         text: 'Display Selected Insurance',
                         options: FFButtonOptions(

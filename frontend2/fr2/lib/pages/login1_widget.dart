@@ -100,19 +100,11 @@ class _Login1WidgetState extends State<Login1Widget> {
                               0,
                               0,
                             ),
-                            child: Text(
-                              'brand.ai',
-                              style: FlutterFlowTheme.of(context).displaySmall
-                                  .override(
-                                    font: 'Inter Tight',
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(
-                                      context,
-                                    ).displaySmall.fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(
-                                      context,
-                                    ).displaySmall.fontStyle,
-                                  ),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              height: 100,
+                              fit: BoxFit.contain,
+                              alignment: Alignment.centerLeft,
                             ),
                           ),
                         ),
@@ -616,12 +608,6 @@ class _Login1WidgetState extends State<Login1Widget> {
                       height: double.infinity,
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).secondaryBackground,
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: Image.network(
-                            'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1380&q=80',
-                          ).image,
-                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),

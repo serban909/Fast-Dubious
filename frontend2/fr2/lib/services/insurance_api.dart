@@ -43,4 +43,9 @@ class InsuranceApi {
       return [];
     }
   }
+
+  static Future<bool> deletePolicy({required int policyId}) async {
+    final response = await http.delete(_endpoint('/api/insurance/$policyId/'));
+    return response.statusCode == 204;
+  }
 }

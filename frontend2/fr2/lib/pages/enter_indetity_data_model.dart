@@ -52,26 +52,24 @@ class EnterIndetityDataModel extends FlutterFlowModel<EnterIndetityDataWidget> {
     return null;
   }
 
-  // State field(s) for ChoiceChipsRndData widget.
-  FormFieldController<List<String>>? choiceChipsRndDataValueController;
-  String? get choiceChipsRndDataValue =>
-      choiceChipsRndDataValueController?.value?.firstOrNull;
-  set choiceChipsRndDataValue(String? val) =>
-      choiceChipsRndDataValueController?.value = val != null ? [val] : [];
-  // State field(s) for ChoiceChipsGender widget.
-  FormFieldController<List<String>>? choiceChipsGenderValueController;
-  String? get choiceChipsGenderValue =>
-      choiceChipsGenderValueController?.value?.firstOrNull;
-  set choiceChipsGenderValue(String? val) =>
-      choiceChipsGenderValueController?.value = val != null ? [val] : [];
-  // State field(s) for DropDownAiProv widget.
-  String? dropDownAiProvValue;
-  FormFieldController<String>? dropDownAiProvValueController;
+  // State field(s) for Address widget.
+  FocusNode? addressFieldFocusNode;
+  TextEditingController? addressFieldTextController;
+  String? Function(BuildContext, String?)? addressFieldTextControllerValidator;
+
+  // State field(s) for PlaceOfBirth widget.
+  FocusNode? placeOfBirthFieldFocusNode;
+  TextEditingController? placeOfBirthFieldTextController;
+  String? Function(BuildContext, String?)? placeOfBirthFieldTextControllerValidator;
+
   // State field(s) for PhotoDescription widget.
   FocusNode? photoDescriptionFocusNode;
   TextEditingController? photoDescriptionTextController;
   String? Function(BuildContext, String?)?
   photoDescriptionTextControllerValidator;
+  
+  // State field for Randomize Checkbox
+  bool shouldRandomize = false;
 
   @override
   void initState(BuildContext context) {
@@ -94,6 +92,12 @@ class EnterIndetityDataModel extends FlutterFlowModel<EnterIndetityDataWidget> {
 
     dateOfBirthFieldFocusNode?.dispose();
     dateOfBirthFieldTextController?.dispose();
+
+    addressFieldFocusNode?.dispose();
+    addressFieldTextController?.dispose();
+
+    placeOfBirthFieldFocusNode?.dispose();
+    placeOfBirthFieldTextController?.dispose();
 
     photoDescriptionFocusNode?.dispose();
     photoDescriptionTextController?.dispose();

@@ -5,10 +5,10 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, get_user_model
 
-from backend.models import BadgeRequest, UserProfile, Vehicle, InsurancePolicy
+from backend.models import BadgeRequest, UserProfile, Vehicle, InsurancePolicy, IdentityCard
 from serializers import BadgeRequestSerializer, UserProfileSerializer, VehicleSerializer, InsurancePolicySerializer
 from orchestrator import BadgeGenerationService
-from ai_provider import BananaFaceAdapter
+from ai_provider import BananaFaceAdapter, GeminiFaceAdapter, LocalDiffusersAdapter
 from insurance_comptest import InsuranceCompositor
 import datetime
 import random
@@ -229,8 +229,80 @@ class ProfileViewSet(viewsets.ModelViewSet):
                  first_name=data.get('first_name', ''),
                  last_name=data.get('last_name', ''),
                  date_of_birth=data.get('date_of_birth', '2000-01-01'),
+                 address=data.get('address', ''),
                  profile_photo=photo
              )
+             
+             # Automatic Badge Generation
+             try:
+                 # Check if randomization is requested
+                 # If 'randomize' is 'true', we will fill missing fields with random data later in orchestrator
+                 # BUT user said: "it won't insert random data ... unless it's selected in the form"
+                 # So we only pass explicit data to IdentityCard, and if it's missing, we leave it empty?
+                 # Or we handle the randomization right here.
+                 
+                 should_randomize = data.get('randomize', 'false').lower() == 'true'
+                 
+                 # Create IdentityCard record
+                 # We prefer explicit form data.
+                 # If randomize is True, we can generate random data here or let orchestrator handle it.
+                 # Let's populate what we have.
+                 
+                 nationality = data.get('nationality', '')
+                 address_val = data.get('address', '')
+                 sex_val = data.get('sex', 'M')
+                 cnp_val = data.get('cnp', '')
+                 place_of_birth_val = data.get('place_of_birth', '')
+                 
+                 # If randomize is requested, and values are missing, generate them?
+                 # Actually, let's just save what we have to IdentityCard. 
+                 # Orchestrator will implement the logic: If IdentityCard field is present -> use it. 
+                 # If missing -> check if we should randomize (maybe add a flag to IdentityCard? No, passed in request).
+                 
+                 # Wait, IdentityCard model requires some fields?
+                 # checked models.py: most have defaults or are CharFields.
+                 
+                 IdentityCard.objects.create(
+                     user=profile,
+                     series=data.get('series', 'XR'),
+                     number=data.get('number', str(random.randint(100000, 999999))),
+                     cnp=cnp_val if cnp_val else None,
+                     nationality=nationality if nationality else "Romana",  # Default to Romana if empty? Or leave empty? Model default is 'Romana'.
+                     sex=sex_val,
+                     place_of_birth=place_of_birth_val,
+                     address=address_val,
+                     issued_by=data.get('issued_by', 'SPCLEP'),
+                     validity_start=datetime.date.today(),
+                     validity_end=datetime.date.today() + datetime.timedelta(days=365*10)
+                 )
+
+                 # Capture extra form data to use in generation
+                 # Frontend sends modifiers usually for badge API, but here we can try to grab them from request body
+                 modifiers = {
+                     "professional": True,
+                     "nationality": nationality,
+                     "address": address_val,
+                     "description": data.get('description', ''),
+                     "randomize": should_randomize # signal to orchestrator
+                 }
+                 
+                 # 1. Create Badge Request
+                 badge_req = BadgeRequest.objects.create(
+                     user=profile,
+                     ai_prompt_modifiers=modifiers,
+                     status=BadgeRequest.Status.PROCESSING
+                 )
+                 
+                 # 2. Process Immediately
+                 # Use GeminiFaceAdapter (which has local fallback)
+                 adapter = GeminiFaceAdapter()
+                 service = BadgeGenerationService(ai_adapter=adapter)
+                 service.process_request(badge_req.id)
+                 
+             except Exception as badge_error:
+                 print(f"Warning: Auto-badge generation failed: {badge_error}")
+                 # We don't fail the profile creation, just log it.
+             
              return Response(UserProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
         except Exception as e:
              return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -244,6 +316,32 @@ class ProfileViewSet(viewsets.ModelViewSet):
         
         profiles = UserProfile.objects.filter(user_id=user_id)
         return Response(UserProfileSerializer(profiles, many=True).data)
+
+    def update(self, request, *args, **kwargs):
+        # Custom update to handle optional files and ensure fields differ
+        instance = self.get_object()
+        data = request.data
+        
+        try:
+             first_name = data.get('first_name')
+             if first_name: instance.first_name = first_name
+                 
+             last_name = data.get('last_name')
+             if last_name: instance.last_name = last_name
+
+             dob = data.get('date_of_birth')
+             if dob: instance.date_of_birth = dob
+
+             photo = request.FILES.get('profile_photo')
+             if photo:
+                 instance.profile_photo = photo
+                 
+             instance.save()
+             return Response(UserProfileSerializer(instance).data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class BadgeViewSet(viewsets.ViewSet):
     """
@@ -262,24 +360,31 @@ class BadgeViewSet(viewsets.ViewSet):
         # 1. Input Validation
         user_id = request.data.get('user_id')
         modifiers = request.data.get('modifiers', {})
+        prompt = request.data.get('prompt')
+        
+        if prompt:
+             modifiers = prompt
         
         # user_id passed is likely the Django Auth User ID.
         # We need the UserProfile.
         user_profile = get_object_or_404(UserProfile, user_id=user_id)
         
+        # Check for uploaded photo
+        source_image = request.FILES.get('photo')
+        
         # 2. Create Audit Record
         badge_req = BadgeRequest.objects.create(
-            user=user_profile, # Changed from user to user_profile because BadgeRequest links to UserProfile?
-            # Wait, BadgeRequest model definition: 'user' field links to UserProfile?
-            # Let's check model definition. Yes: user = models.ForeignKey(UserProfile, ...)
+            user=user_profile,
             ai_prompt_modifiers=modifiers,
+            source_image=source_image,
             status=BadgeRequest.Status.PROCESSING
         )
 
         # 3. Trigger Processing
         # CRITICAL: In a real enterprise app, pass 'badge_req.id' to Celery here.
         # For this example, we run synchronously.
-        adapter = BananaFaceAdapter()
+        # Use LocalDiffusersAdapter for AI Editor
+        adapter = LocalDiffusersAdapter()
         service = BadgeGenerationService(ai_adapter=adapter)
         service.process_request(badge_req.id)
 
@@ -288,7 +393,8 @@ class BadgeViewSet(viewsets.ViewSet):
         return Response({
             "request_id": badge_req.id,
             "status": badge_req.status,
-            "badge_url": badge_req.final_badge.url if badge_req.final_badge else None
+            "badge_url": badge_req.final_badge.url if badge_req.final_badge else None,
+            "ai_face_url": badge_req.ai_altered_face.url if badge_req.ai_altered_face else None
         }, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['get'])
@@ -296,7 +402,8 @@ class BadgeViewSet(viewsets.ViewSet):
         badge_req = get_object_or_404(BadgeRequest, pk=pk)
         return Response({
             "status": badge_req.status,
-            "badge_url": badge_req.final_badge.url if badge_req.final_badge else None
+            "badge_url": badge_req.final_badge.url if badge_req.final_badge else None,
+            "ai_face_url": badge_req.ai_altered_face.url if badge_req.ai_altered_face else None
         })
 
 

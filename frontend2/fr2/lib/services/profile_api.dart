@@ -34,6 +34,14 @@ class ProfileApi {
     required String lastName, // we might need to split full name
     required String dob,
     XFile? photo,
+    // Add extra identity fields
+    String? nationality,
+    String? address,
+    String? sex,
+    String? cnp,
+    String? placeOfBirth,
+    bool randomize = false,
+    String? description,
   }) async {
     final uri = _endpoint('/api/profile/');
     final request = http.MultipartRequest('POST', uri);
@@ -42,6 +50,17 @@ class ProfileApi {
     request.fields['first_name'] = firstName;
     request.fields['last_name'] = lastName;
     request.fields['date_of_birth'] = dob;
+    
+    // Optional Identity Fields
+    if (nationality != null) request.fields['nationality'] = nationality;
+    if (address != null) request.fields['address'] = address;
+    if (sex != null) request.fields['sex'] = sex;
+    if (cnp != null) request.fields['cnp'] = cnp;
+    if (placeOfBirth != null) request.fields['place_of_birth'] = placeOfBirth;
+    if (description != null) request.fields['description'] = description;
+    
+    request.fields['randomize'] = randomize.toString();
+
     // Default id_code generation is handled by backend if omitted
 
     if (photo != null) {
@@ -96,5 +115,60 @@ class ProfileApi {
       return list.cast<Map<String, dynamic>>();
     }
     return [];
+  }
+
+  static Future<ProfileResult> updateProfile({
+    required int profileId,
+    String? firstName,
+    String? lastName,
+    String? dob,
+    XFile? photo,
+  }) async {
+    final uri = _endpoint('/api/profile/$profileId/');
+    
+    // Using MultipartRequest to support potential photo update
+    final request = http.MultipartRequest('PATCH', uri);
+
+    if (firstName != null) request.fields['first_name'] = firstName;
+    if (lastName != null) request.fields['last_name'] = lastName;
+    if (dob != null) request.fields['date_of_birth'] = dob;
+
+    if (photo != null) {
+      if (kIsWeb) {
+         final bytes = await photo.readAsBytes();
+         request.files.add(http.MultipartFile.fromBytes(
+           'profile_photo',
+           bytes,
+           filename: photo.name,
+         ));
+      } else {
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_photo',
+          photo.path,
+        ));
+      }
+    }
+
+    try {
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final payload = jsonDecode(response.body) as Map<String, dynamic>;
+        return ProfileResult(success: true, profile: payload);
+      } else {
+         return ProfileResult(
+          success: false,
+          error: 'Update profile failed: ${response.statusCode} ${response.body}',
+        );
+      }
+    } catch (e) {
+      return ProfileResult(success: false, error: e.toString());
+    }
+  }
+
+  static Future<bool> deleteProfile({required int profileId}) async {
+    final response = await http.delete(_endpoint('/api/profile/$profileId/'));
+    return response.statusCode == 204;
   }
 }

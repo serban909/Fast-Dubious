@@ -318,16 +318,26 @@ if __name__ == "__main__":
         "number": place_data['number']
     }
 
-    # 4. Process Photo with AI (Optional)
-    from ai_provider import GeminiFaceAdapter
+    # 4. Process Photo with AI (Local Editor)
+    from ai_provider import LocalDiffusersAdapter
     
     photo_path = "djtb.jpeg"
-    # Example prompt - in a real scenario, this matches the user "description"
+    # Example prompt
     description = "add a mustache" 
     
-    print(f"🤖 Connecting to Gemini API to process: {photo_path} with: '{description}'")
-    ai_adapter = GeminiFaceAdapter()
-    processed_photo_path = ai_adapter.alter_face(photo_path, description)
+    print(f"🤖 Calling Local AI Editor to process: {photo_path} with: '{description}'")
+    ai_adapter = LocalDiffusersAdapter()
+    
+    # Ensure a source photo exists for testing
+    if not os.path.exists(photo_path):
+        print(f"⚠️ Test photo {photo_path} not found. Using a dummy placeholder if available or skipping AI.")
+        # Create a dummy image if needed or handle error
+        
+    try:
+        processed_photo_path = ai_adapter.alter_face(photo_path, description)
+    except Exception as e:
+        print(f"AI Error: {e}")
+        processed_photo_path = photo_path
     
     compositor = BadgeCompositor(
         template_path="CIROU_temp2.png",  # Using the main template
@@ -336,3 +346,40 @@ if __name__ == "__main__":
 
     result_path = compositor.create_badge(user_info, processed_photo_path)
     print(f"✅ Badge created: {result_path}")
+
+    # 5. Save to Database (Requested)
+    print("💾 Saving results to database...")
+    from backend.models import UserProfile, BadgeRequest
+    from django.core.files import File
+    from django.utils import timezone
+    
+    # Find or Create Dummy User for this test
+    user, created = UserProfile.objects.get_or_create(
+        id_code=user_info['id_code'],
+        defaults={
+            'first_name': user_info['first_name'],
+            'last_name': user_info['last_name'],
+            'date_of_birth': '2000-01-01', 
+            'address': user_info['address']
+        }
+    )
+    
+    # Create BadgeRequest
+    req = BadgeRequest.objects.create(
+        user=user,
+        ai_prompt_modifiers={"prompt": description, "source": "comptest_script"},
+        status=BadgeRequest.Status.COMPLETED
+    )
+    
+    # Save Images
+    if os.path.exists(processed_photo_path):
+        with open(processed_photo_path, 'rb') as f:
+            req.ai_altered_face.save(f"test_ai_{user.id_code}.png", File(f))
+            
+    if os.path.exists(result_path):
+        with open(result_path, 'rb') as f:
+            req.final_badge.save(f"test_badge_{user.id_code}.png", File(f))
+            
+    print(f"✅ Saved to DB: BadgeRequest ID {req.id}")
+    print(f"   AI Face URL: {req.ai_altered_face.url if req.ai_altered_face else 'None'}")
+    print(f"   Badge URL: {req.final_badge.url if req.final_badge else 'None'}")

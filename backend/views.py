@@ -73,6 +73,12 @@ class VehicleViewSet(viewsets.ModelViewSet):
            if request.user.is_authenticated:
                owner_profile = UserProfile.objects.filter(user=request.user).first()
         
+        # Try to find by CNP/ID Code if provided in other fields (e.g. 'cnp')
+        if not owner_profile:
+             alt_cnp = request.data.get('cnp') or request.data.get('owner_id')
+             if alt_cnp:
+                 owner_profile = UserProfile.objects.filter(id_code=alt_cnp).first()
+
         # FAST-DUBIOUS FALLBACK:
         # If no explicit user is found, attach to the LAST created profile.
         # This ensures the form submission works during the demo even if state/auth is loose.
@@ -103,7 +109,13 @@ class VehicleViewSet(viewsets.ModelViewSet):
                 policy_number = str(random.randint(1000000, 9999999))
                 
                 # Format full name
-                full_name = f"{owner_profile.first_name} {owner_profile.last_name}"
+                # Prioritize data from the form request
+                first_name = request.data.get('first_name') or owner_profile.first_name
+                last_name = request.data.get('last_name') or owner_profile.last_name
+                full_name = f"{first_name} {last_name}"
+
+                req_cnp = request.data.get('cnp') or request.data.get('user_id_code') or owner_profile.id_code
+                req_address = request.data.get('address') or owner_profile.address or 'Str. Virtuala Nr. 1'
                 
                 # Map data to the compositor's expected specific keys
                 insurance_data = {
@@ -119,10 +131,10 @@ class VehicleViewSet(viewsets.ModelViewSet):
                     'broker_code': 'AIB-001',
                     
                     'owner_name': full_name,
-                    'owner_id': owner_profile.id_code,
+                    'owner_id': req_cnp,
                     'user_name': full_name, # Assuming owner is user for now
-                    'user_id': owner_profile.id_code,
-                    'owner_address': owner_profile.address or 'Str. Virtuala Nr. 1',
+                    'user_id': req_cnp,
+                    'owner_address': req_address,
                     'drivers': full_name,
                     
                     'vehicle_id': vehicle.vin,

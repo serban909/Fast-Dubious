@@ -1565,7 +1565,8 @@ class _EnterCarDataWidgetState extends State<EnterCarDataWidget> {
                           makeModel: _model.modelTextController.text,
                           vin: _model.idSerieTextController.text,
                           enginePower: _model.capacitatePutereTextController.text, // e.g. 1390 cm3 / 55 kW
-                          seatsMass: "${_model.nrLocuriTextController.text} / ${_model.masaTotalaTextController.text}", // Combining for now to match backend model
+                          // Use masaAutorizata as it is the required field in UI
+                          seatsMass: "${_model.nrLocuriTextController.text} / ${_model.masaAutorizataTextController.text.isNotEmpty ? _model.masaAutorizataTextController.text : _model.masaTotalaTextController.text}", 
                           
                           // Pass explicit owner details if present
                           firstName: _model.fullNameTextController.text.split(' ').first,

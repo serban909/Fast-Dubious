@@ -1,3 +1,4 @@
+import 'package:fr2/pages/display_insurance_widget.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutterflow_ui/flutterflow_ui.dart';
@@ -326,7 +327,35 @@ class _ChooseInsuranceWidgetState extends State<ChooseInsuranceWidget> {
                       ),
                       child: FFButtonWidget(
                         onPressed: () {
-                          print('DisplaySelectedInsBtn pressed ...');
+                          if (_selectedInsuranceIndex != -1) {
+                              final insurance = _insurances[_selectedInsuranceIndex];
+                              // Logic to get the URL
+                              String? imageUrl = insurance['policy_document'];
+                              if (imageUrl != null && !imageUrl.startsWith('http')) {
+                                  // Determine base url same as API
+                                  // For simplicity hardcode or reuse logic if possible.
+                                  // Since we don't have easy access to kIsWeb here without importing foundation + duplicate logic
+                                  // let's just assume localhost:8000 for this fix or use a relative path if supported
+                                  // but Image.network needs absolute. 
+                                  // Let's use the same logic as the list builder:
+                                  imageUrl = "http://localhost:8000$imageUrl";
+                              }
+                              
+                              if (imageUrl != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DisplayInsuranceWidget(
+                                        policyUrl: imageUrl!,
+                                      ),
+                                    ),
+                                  );
+                              }
+                          } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please select a policy first.')),
+                              );
+                          }
                         },
                         text: 'Display Selected Insurance',
                         options: FFButtonOptions(

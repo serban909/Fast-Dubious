@@ -7,7 +7,12 @@ export 'display_insurance_model.dart';
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 
 class DisplayInsuranceWidget extends StatefulWidget {
-  const DisplayInsuranceWidget({super.key});
+  const DisplayInsuranceWidget({
+    super.key,
+    required this.policyUrl,
+  });
+
+  final String policyUrl;
 
   static String routeName = 'DisplayInsurance';
   static String routePath = '/displayInsurance';
@@ -63,22 +68,32 @@ class _DisplayInsuranceWidgetState extends State<DisplayInsuranceWidget> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    'https://picsum.photos/seed/568/600',
+                    widget.policyUrl,
                     width: double.infinity,
                     height: MediaQuery.sizeOf(context).height * 0.75,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => 
+                        const Center(child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                            Text("Image not found"),
+                          ],
+                        )),
                   ),
                 ),
               ),
-              FFButtonWidget(
-                onPressed: () async {
-                  //context.pushNamed(ChooseInsuranceWidget.routeName);
-                },
-                text: 'Button',
-                options: FFButtonOptions(
-                  width: double.infinity,
-                  height: 40,
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FFButtonWidget(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  text: 'Back',
+                  options: FFButtonOptions(
+                    width: double.infinity,
+                    height: 40,
+                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                   iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                   color: FlutterFlowTheme.of(context).primary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
@@ -95,6 +110,7 @@ class _DisplayInsuranceWidgetState extends State<DisplayInsuranceWidget> {
                   elevation: 0,
                   borderRadius: BorderRadius.circular(8),
                 ),
+              ),
               ),
             ],
           ),

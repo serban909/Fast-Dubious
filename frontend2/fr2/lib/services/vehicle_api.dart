@@ -33,8 +33,11 @@ class VehicleApi {
     required String vin,
     required String enginePower,
     required String seatsMass,
-    // Add these if you want to link to a specific user explicitly
-    // otherwise backend might rely on session
+    // Optional owner details overrides
+    String? firstName,
+    String? lastName,
+    String? cnp,
+    String? address,
     String? userCode, 
   }) async {
     final uri = _endpoint('/api/vehicles/');
@@ -55,6 +58,12 @@ class VehicleApi {
       request.fields['vin'] = vin;
       request.fields['engine_power'] = enginePower;
       request.fields['seats_mass'] = seatsMass;
+
+      // Pass owner overrides if provided
+      if (firstName != null) request.fields['first_name'] = firstName;
+      if (lastName != null) request.fields['last_name'] = lastName;
+      if (cnp != null) request.fields['cnp'] = cnp;
+      if (address != null) request.fields['address'] = address;
 
       // HACK: For now, we need to associate this car with a user profile.
       // Since we don't have global state management fully visible here, 

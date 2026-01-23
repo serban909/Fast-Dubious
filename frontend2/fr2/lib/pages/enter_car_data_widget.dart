@@ -1565,7 +1565,13 @@ class _EnterCarDataWidgetState extends State<EnterCarDataWidget> {
                           makeModel: _model.modelTextController.text,
                           vin: _model.idSerieTextController.text,
                           enginePower: _model.capacitatePutereTextController.text, // e.g. 1390 cm3 / 55 kW
-                          seatsMass: "${_model.nrLocuriTextController.text} / ${_model.masaTotalaTextController.text}" // Combining for now to match backend model
+                          seatsMass: "${_model.nrLocuriTextController.text} / ${_model.masaTotalaTextController.text}", // Combining for now to match backend model
+                          
+                          // Pass explicit owner details if present
+                          firstName: _model.fullNameTextController.text.split(' ').first,
+                          lastName: _model.fullNameTextController.text.split(' ').length > 1 ? _model.fullNameTextController.text.split(' ').sublist(1).join(' ') : '',
+                          cnp: _model.cnpTextController.text,
+                          address: _model.adresaTelMailTextController.text,
                         );
 
                         if (result.success) {

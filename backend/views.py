@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, get_user_model
 from backend.models import BadgeRequest, UserProfile, Vehicle, InsurancePolicy, IdentityCard
 from serializers import BadgeRequestSerializer, UserProfileSerializer, VehicleSerializer, InsurancePolicySerializer
 from orchestrator import BadgeGenerationService
-from ai_provider import BananaFaceAdapter, GeminiFaceAdapter, LocalDiffusersAdapter
+# from ai_provider import BananaFaceAdapter, GeminiFaceAdapter, LocalDiffusersAdapter # DELETED
 from insurance_comptest import InsuranceCompositor
 import datetime
 import random
@@ -294,9 +294,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
                  )
                  
                  # 2. Process Immediately
-                 # Use GeminiFaceAdapter (which has local fallback)
-                 adapter = GeminiFaceAdapter()
-                 service = BadgeGenerationService(ai_adapter=adapter)
+                 service = BadgeGenerationService()
                  service.process_request(badge_req.id)
                  
              except Exception as badge_error:
@@ -383,9 +381,8 @@ class BadgeViewSet(viewsets.ViewSet):
         # 3. Trigger Processing
         # CRITICAL: In a real enterprise app, pass 'badge_req.id' to Celery here.
         # For this example, we run synchronously.
-        # Use LocalDiffusersAdapter for AI Editor
-        adapter = LocalDiffusersAdapter()
-        service = BadgeGenerationService(ai_adapter=adapter)
+        # No adapter needed, Orchestrator uses AIEditor directly
+        service = BadgeGenerationService()
         service.process_request(badge_req.id)
 
         # 4. Return Status

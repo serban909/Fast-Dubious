@@ -319,25 +319,26 @@ if __name__ == "__main__":
     }
 
     # 4. Process Photo with AI (Local Editor)
-    from ai_provider import LocalDiffusersAdapter
+    from backend.ai_editor import AIEditor
     
     photo_path = "djtb.jpeg"
     # Example prompt
     description = "add a mustache" 
     
     print(f"🤖 Calling Local AI Editor to process: {photo_path} with: '{description}'")
-    ai_adapter = LocalDiffusersAdapter()
     
     # Ensure a source photo exists for testing
     if not os.path.exists(photo_path):
-        print(f"⚠️ Test photo {photo_path} not found. Using a dummy placeholder if available or skipping AI.")
-        # Create a dummy image if needed or handle error
-        
-    try:
-        processed_photo_path = ai_adapter.alter_face(photo_path, description)
-    except Exception as e:
-        print(f"AI Error: {e}")
+        print(f"⚠️ Test photo {photo_path} not found. Skipping AI.")
         processed_photo_path = photo_path
+    else:
+        try:
+            editor = AIEditor.get_instance()
+            processed_photo_path = "test_processed_face.png"
+            editor.edit_image(photo_path, description, processed_photo_path)
+        except Exception as e:
+            print(f"AI Error: {e}")
+            processed_photo_path = photo_path
     
     compositor = BadgeCompositor(
         template_path="CIROU_temp2.png",  # Using the main template

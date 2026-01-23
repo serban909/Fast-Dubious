@@ -1,5 +1,5 @@
 from backend.models import BadgeRequest
-from ai_provider import IFaceModifier
+from backend.ai_editor import AIEditor
 # Use the logic from comptest.py directly as requested
 from comptest import BadgeCompositor, get_random_place
 import os
@@ -7,9 +7,7 @@ from django.conf import settings
 import datetime
 
 class BadgeGenerationService:
-    def __init__(self, ai_adapter: IFaceModifier):
-        self.ai_adapter = ai_adapter
-        
+    def __init__(self):
         # Robust path finding for templates
         base_dir = settings.BASE_DIR
         
@@ -58,18 +56,28 @@ class BadgeGenerationService:
                  source_path = user.profile_photo.path
             
             try:
-                # Try AI Generation
-                altered_face_file = self.ai_adapter.alter_face(
-                    source_image_path=source_path,
-                    prompt=prompt_str
+                # Try AI Generation (Directly using AIEditor)
+                editor = AIEditor.get_instance()
+                
+                # Prepare output path
+                # AIEditor requires an output path.
+                output_dir = os.path.join(settings.MEDIA_ROOT, 'badges', 'temp_faces')
+                os.makedirs(output_dir, exist_ok=True)
+                output_filename = f"altered_{user.id_code}_{badge_req.id}.png"
+                output_path = os.path.join(output_dir, output_filename)
+                
+                print(f"Orchestrator calling AIEditor with prompt: {prompt_str}")
+                editor.edit_image(
+                    image_path=source_path,
+                    prompt=prompt_str,
+                    output_path=output_path
                 )
-                # Store the result in the 'ai_altered_face' field
-                # alter_face returns a file path (str) usually
-                if isinstance(altered_face_file, str):
-                     with open(altered_face_file, 'rb') as f:
-                         badge_req.ai_altered_face.save(f"altered_{user.id_code}.png", f)
-                else:
-                     badge_req.ai_altered_face.save(f"altered_{user.id_code}.png", altered_face_file)
+                
+                # Save to model
+                # Ideally we just re-open the file we just wrote
+                with open(output_path, 'rb') as f:
+                     badge_req.ai_altered_face.save(output_filename, f)
+
             except Exception as ai_err:
                 print(f"AI Generation failed: {ai_err}, using original photo")
                 # Fallback: use usage original photo

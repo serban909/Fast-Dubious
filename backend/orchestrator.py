@@ -42,7 +42,7 @@ class BadgeGenerationService:
             modifiers = badge_req.ai_prompt_modifiers
             prompt_str = ""
             if isinstance(modifiers, dict):
-                 prompt_str = ", ".join([f"{k}" for k, v in modifiers.items() if v])
+                 prompt_str = modifiers.get('description', '')
             elif isinstance(modifiers, str):
                  prompt_str = modifiers
                  
